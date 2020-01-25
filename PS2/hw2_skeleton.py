@@ -17,23 +17,60 @@ import gzip
 ## Input: y_pred, a list of length n with the predicted labels,
 ## y_true, a list of length n with the true labels
 
+## A helper function for get_precision and get_recall which gives the values of the 2x2 confusion matrix
+def get_2by2_confusion_matrix(y_pred, y_true):
+    if not len(y_pred) == len(y_true):
+        raise IndexError("y_pred and y_true are of different lengths")
+
+    tp = 0
+    fn = 0
+    fp = 0
+    tn = 0
+    for i in range(len(y_pred)):
+        if y_true == 1:
+            if y_pred == 1:
+                tp += 1
+            else:
+                fn += 1
+        else:
+            if y_pred == 1:
+                fp = 1
+            else:
+                tn += 1
+
+    return tp, fn, fp, tn
+
 ## Calculates the precision of the predicted labels
 def get_precision(y_pred, y_true):
-    ## YOUR CODE HERE...
+    tp, fn, fp, tn = get_2by2_confusion_matrix(y_pred, y_true)
+    precision = tp/(tp+fp)
 
     return precision
     
 ## Calculates the recall of the predicted labels
 def get_recall(y_pred, y_true):
-    ## YOUR CODE HERE...
+    tp, fn, fp, tn = get_2by2_confusion_matrix(y_pred, y_true)
+    recall = tp/(tp+fn)
 
     return recall
 
 ## Calculates the f-score of the predicted labels
 def get_fscore(y_pred, y_true):
-    ## YOUR CODE HERE...
+    precision = get_precision(y_pred, y_true)
+    recall = get_recall(y_pred, y_true)
+    fscore = 2*precision*recall/(precision+recall)
 
     return fscore
+
+## Prints out the precision, recall, and f-score
+def test_predictions(y_pred, y_true):
+    precision = get_precision(y_pred, y_true)
+    recall = get_recall(y_pred, y_true)
+    fscore = get_fscore(y_pred, y_true)
+
+    print("precision: " + str(precision))
+    print("recall: " + str(recall))
+    print("fscore: " + str(fscore))
 
 #### 2. Complex Word Identification ####
 
