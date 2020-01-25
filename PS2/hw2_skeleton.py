@@ -33,31 +33,28 @@ def get_2by2_confusion_matrix(y_pred, y_true):
     fp = 0
     tn = 0
     for i in range(len(y_pred)):
-        if y_true == 1:
-            if y_pred == 1:
+        if y_true[i] == 1:
+            if y_pred[i] == 1:
                 tp += 1
             else:
                 fn += 1
         else:
-            if y_pred == 1:
+            if y_pred[i] == 1:
                 fp = 1
             else:
                 tn += 1
-
     return tp, fn, fp, tn
 
 ## Calculates the precision of the predicted labels
 def get_precision(y_pred, y_true):
     tp, fn, fp, tn = get_2by2_confusion_matrix(y_pred, y_true)
     precision = tp/(tp+fp)
-
     return precision
     
 ## Calculates the recall of the predicted labels
 def get_recall(y_pred, y_true):
     tp, fn, fp, tn = get_2by2_confusion_matrix(y_pred, y_true)
     recall = tp/(tp+fn)
-
     return recall
 
 ## Calculates the f-score of the predicted labels
@@ -65,7 +62,6 @@ def get_fscore(y_pred, y_true):
     precision = get_precision(y_pred, y_true)
     recall = get_recall(y_pred, y_true)
     fscore = 2*precision*recall/(precision+recall)
-
     return fscore
 
 ## Prints out the precision, recall, and f-score
@@ -73,7 +69,6 @@ def test_predictions(y_pred, y_true):
     precision = get_precision(y_pred, y_true)
     recall = get_recall(y_pred, y_true)
     fscore = get_fscore(y_pred, y_true)
-
     print("precision: " + str(precision))
     print("recall: " + str(recall))
     print("fscore: " + str(fscore))
@@ -154,7 +149,6 @@ def length_feature(words):
     lengths = []
     for i in range(len(words)):
         lengths.append(len(words[i]))
-
     return lengths
 
 ### 2.3: Word frequency thresholding
