@@ -12,6 +12,7 @@
 from collections import defaultdict
 import gzip
 import numpy as np
+from scipy.stats import zscore
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 
@@ -32,13 +33,13 @@ def get_2by2_confusion_matrix(y_pred, y_true):
     fp = 0
     tn = 0
     for i in range(len(y_pred)):
-        if y_true == 1:
-            if y_pred == 1:
+        if y_true[i] == 1:
+            if y_pred[i] == 1:
                 tp += 1
             else:
                 fn += 1
         else:
-            if y_pred == 1:
+            if y_pred[i] == 1:
                 fp = 1
             else:
                 tn += 1
@@ -152,12 +153,12 @@ def word_length_threshold(training_file, development_file):
     development_performance = [dprecision, drecall, dfscore]
     return training_performance, development_performance
 
+
 ## Make feature matrix consisting of word lengths
 def length_feature(words):
     lengths = []
     for i in range(len(words)):
         lengths.append(len(words[i]))
-
     return lengths
 
 ### 2.3: Word frequency thresholding
@@ -174,6 +175,14 @@ def load_ngram_counts(ngram_counts_file):
 
 # Finds the best frequency threshold by f-score, and uses this threshold to
 ## classify the training and development set
+
+
+# Computes raw frequencies
+def frequency_features(words, counts):
+    frequencies = []
+    for word in words:
+        frequencies.append(counts[word])
+    return frequencies
 
 ## Make feature matrix for word_frequency_threshold
 def frequency_threshold_feature(words, threshold, counts):
@@ -211,12 +220,14 @@ def naive_bayes(training_file, development_file, counts):
     twords, y_true_training = load_file(training_file)
     dwords, y_true_development = load_file(development_file)
 
-    X_train = get_standard_features(twords, 9, counts)
+    # X_train = get_standard_features(twords, 9, counts)
+    X_train = my_features(twords, counts)
     clf = GaussianNB()
     clf.fit(X_train, y_true_training)
 
-    y_pred_training = clf.predict(twords)
-    y_pred_development = clf.predict(dwords)
+    X_dev = my_features(dwords, counts)
+    y_pred_training = clf.predict(X_train)
+    y_pred_development = clf.predict(X_dev)
 
     tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
     dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
@@ -232,12 +243,14 @@ def logistic_regression(training_file, development_file, counts):
     twords, y_true_training = load_file(training_file)
     dwords, y_true_development = load_file(development_file)
 
-    X_train = get_standard_features(twords, 9, counts)
+    # X_train = get_standard_features(twords, 9, counts)
+    X_train = my_features(twords, counts)
     clf = LogisticRegression()
     clf.fit(X_train, y_true_training)
 
-    y_pred_training = clf.predict(twords)
-    y_pred_development = clf.predict(dwords)
+    X_dev = my_features(dwords, counts)
+    y_pred_training = clf.predict(X_train)
+    y_pred_development = clf.predict(X_dev)
 
     tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
     dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
@@ -248,9 +261,28 @@ def logistic_regression(training_file, development_file, counts):
 
 ### 2.7: Build your own classifier
 
+
+# Extracts features for every word within the 'words' list with reference to
+# the 'counts' dictionary
+def my_features(words, counts):
+    length_feats = length_feature(words)
+    freq_feats = frequency_features(words, counts)
+    # Normalize features
+    length_feats = np.array(zscore(length_feats))
+    freq_feats = np.array(zscore(freq_feats))
+    return np.c_[length_feats, freq_feats]
+
 ## Trains a classifier of your choosing, predicts labels for the test dataset
 ## and writes the predicted labels to the text file 'test_labels.txt',
 ## with ONE LABEL PER LINE
+def my_classifier(training_file, development_file, counts):
+    twords, y_true_training = load_file(training_file)
+    dwords, y_true_development = load_file(development_file)
+
+    f_threshold = 10
+    X_train = get_standard_features(twords, f_threshold, counts)
+
+    return None
 
 
 if __name__ == "__main__":
@@ -262,3 +294,7 @@ if __name__ == "__main__":
     
     ngram_counts_file = "ngram_counts.txt.gz"
     counts = load_ngram_counts(ngram_counts_file)
+    naive_bayes_results = naive_bayes(training_file, development_file, counts)
+    logistic_regression_results = logistic_regression(training_file, development_file, counts)
+    print(naive_bayes_results)
+    print(logistic_regression_results)
