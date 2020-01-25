@@ -14,6 +14,7 @@ import gzip
 import numpy as np
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 
 
 #### 1. Evaluation Metrics ####
@@ -205,9 +206,15 @@ def word_frequency_threshold(training_file, development_file, counts):
 ### 2.4: Naive Bayes
 
 def get_standard_features(words, frequency_threshold, counts):
+    length_array = length_feature(words)
+
+    scaler = StandardScaler()
+    scaler.fit(scaler)
+    scaled_length_array = scaler.transform(length_array)
+
     features = np.array([
         words,
-        length_feature(words),
+        scaled_length_array,
         frequency_threshold_feature(words, frequency_threshold, counts)
     ])
 
