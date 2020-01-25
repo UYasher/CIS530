@@ -15,15 +15,15 @@ import numpy as np
 from scipy.stats import zscore
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 
 
 #### 1. Evaluation Metrics ####
 
-# Input: y_pred, a list of length n with the predicted labels,
-# y_true, a list of length n with the true labels
+## Input: y_pred, a list of length n with the predicted labels,
+## y_true, a list of length n with the true labels
 
-
-# A helper function for get_precision and get_recall which gives the values of the 2x2 confusion matrix
+## A helper function for get_precision and get_recall which gives the values of the 2x2 confusion matrix
 def get_2by2_confusion_matrix(y_pred, y_true):
     if not len(y_pred) == len(y_true):
         raise IndexError("y_pred and y_true are of different lengths")
@@ -33,35 +33,32 @@ def get_2by2_confusion_matrix(y_pred, y_true):
     fp = 0
     tn = 0
     for i in range(len(y_pred)):
-        if y_true[i] == 1:
-            if y_pred[i] == 1:
+        if y_true == 1:
+            if y_pred == 1:
                 tp += 1
             else:
                 fn += 1
         else:
-            if y_pred[i] == 1:
+            if y_pred == 1:
                 fp = 1
             else:
                 tn += 1
 
     return tp, fn, fp, tn
 
-
-# Calculates the precision of the predicted labels
+## Calculates the precision of the predicted labels
 def get_precision(y_pred, y_true):
     tp, fn, fp, tn = get_2by2_confusion_matrix(y_pred, y_true)
     precision = tp/(tp+fp)
 
     return precision
-
-
-# Calculates the recall of the predicted labels
+    
+## Calculates the recall of the predicted labels
 def get_recall(y_pred, y_true):
     tp, fn, fp, tn = get_2by2_confusion_matrix(y_pred, y_true)
     recall = tp/(tp+fn)
 
     return recall
-
 
 ## Calculates the f-score of the predicted labels
 def get_fscore(y_pred, y_true):
@@ -70,7 +67,6 @@ def get_fscore(y_pred, y_true):
     fscore = 2*precision*recall/(precision+recall)
 
     return fscore
-
 
 ## Prints out the precision, recall, and f-score
 def test_predictions(y_pred, y_true):
@@ -84,7 +80,6 @@ def test_predictions(y_pred, y_true):
     return precision, recall, fscore
 
 #### 2. Complex Word Identification ####
-
 
 ## Loads in the words and labels of one of the datasets
 def load_file(data_file):
@@ -102,6 +97,7 @@ def load_file(data_file):
 
 ### 2.1: A very simple baseline
 
+########## Testing
 
 ## Makes feature matrix for all complex
 def all_complex_feature(words):
@@ -153,12 +149,12 @@ def word_length_threshold(training_file, development_file):
     development_performance = [dprecision, drecall, dfscore]
     return training_performance, development_performance
 
-
 ## Make feature matrix consisting of word lengths
 def length_feature(words):
     lengths = []
     for i in range(len(words)):
         lengths.append(len(words[i]))
+
     return lengths
 
 ### 2.3: Word frequency thresholding
@@ -207,9 +203,15 @@ def word_frequency_threshold(training_file, development_file, counts):
 ### 2.4: Naive Bayes
 
 def get_standard_features(words, frequency_threshold, counts):
+    length_array = length_feature(words)
+
+    scaler = StandardScaler()
+    scaler.fit(scaler)
+    scaled_length_array = scaler.transform(length_array)
+
     features = np.array([
         words,
-        length_feature(words),
+        scaled_length_array,
         frequency_threshold_feature(words, frequency_threshold, counts)
     ])
 
@@ -275,14 +277,6 @@ def my_features(words, counts):
 ## Trains a classifier of your choosing, predicts labels for the test dataset
 ## and writes the predicted labels to the text file 'test_labels.txt',
 ## with ONE LABEL PER LINE
-def my_classifier(training_file, development_file, counts):
-    twords, y_true_training = load_file(training_file)
-    dwords, y_true_development = load_file(development_file)
-
-    f_threshold = 10
-    X_train = get_standard_features(twords, f_threshold, counts)
-
-    return None
 
 
 if __name__ == "__main__":
