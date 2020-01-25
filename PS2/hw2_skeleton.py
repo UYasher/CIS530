@@ -18,10 +18,11 @@ from sklearn.linear_model import LogisticRegression
 
 #### 1. Evaluation Metrics ####
 
-## Input: y_pred, a list of length n with the predicted labels,
-## y_true, a list of length n with the true labels
+# Input: y_pred, a list of length n with the predicted labels,
+# y_true, a list of length n with the true labels
 
-## A helper function for get_precision and get_recall which gives the values of the 2x2 confusion matrix
+
+# A helper function for get_precision and get_recall which gives the values of the 2x2 confusion matrix
 def get_2by2_confusion_matrix(y_pred, y_true):
     if not len(y_pred) == len(y_true):
         raise IndexError("y_pred and y_true are of different lengths")
@@ -44,19 +45,22 @@ def get_2by2_confusion_matrix(y_pred, y_true):
 
     return tp, fn, fp, tn
 
-## Calculates the precision of the predicted labels
+
+# Calculates the precision of the predicted labels
 def get_precision(y_pred, y_true):
     tp, fn, fp, tn = get_2by2_confusion_matrix(y_pred, y_true)
     precision = tp/(tp+fp)
 
     return precision
-    
-## Calculates the recall of the predicted labels
+
+
+# Calculates the recall of the predicted labels
 def get_recall(y_pred, y_true):
     tp, fn, fp, tn = get_2by2_confusion_matrix(y_pred, y_true)
     recall = tp/(tp+fn)
 
     return recall
+
 
 ## Calculates the f-score of the predicted labels
 def get_fscore(y_pred, y_true):
@@ -65,6 +69,7 @@ def get_fscore(y_pred, y_true):
     fscore = 2*precision*recall/(precision+recall)
 
     return fscore
+
 
 ## Prints out the precision, recall, and f-score
 def test_predictions(y_pred, y_true):
@@ -78,6 +83,7 @@ def test_predictions(y_pred, y_true):
     return precision, recall, fscore
 
 #### 2. Complex Word Identification ####
+
 
 ## Loads in the words and labels of one of the datasets
 def load_file(data_file):
@@ -95,17 +101,20 @@ def load_file(data_file):
 
 ### 2.1: A very simple baseline
 
+
 ## Makes feature matrix for all complex
 def all_complex_feature(words):
-    return None
+    return [1 for _ in words]
+
 
 ## Labels every word complex
 def all_complex(data_file):
     ## YOUR CODE HERE...
-
-    # performance = [precision, recall, fscore]
-    # return performance
-    return None
+    words, labels = load_file(data_file)
+    outputs = all_complex_feature(words)
+    precision, recall, fscore = test_predictions(outputs, labels)
+    performance = [precision, recall, fscore]
+    return performance
 
 
 ### 2.2: Word length thresholding
@@ -192,7 +201,7 @@ def naive_bayes(training_file, development_file, counts):
 
 ## Trains a Naive Bayes classifier using length and frequency features
 def logistic_regression(training_file, development_file, counts):
-    ## YOUR CODE HERE    
+    ## YOUR CODE HERE
     # training_performance = (tprecision, trecall, tfscore)
     # development_performance = (dprecision, drecall, dfscore)
     # return development_performance
