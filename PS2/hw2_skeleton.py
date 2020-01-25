@@ -71,6 +71,7 @@ def test_predictions(y_pred, y_true):
     print("precision: " + str(precision))
     print("recall: " + str(recall))
     print("fscore: " + str(fscore))
+    return precision, recall, fscore
 
 #### 2. Complex Word Identification ####
 
@@ -136,24 +137,35 @@ def load_ngram_counts(ngram_counts_file):
 ## Make feature matrix for word_frequency_threshold
 def frequency_threshold_feature(words, threshold, counts):
     output = []
-    labels = []
     for word in words:
-
-    return None
+        output.append(1) if counts[word] > threshold else output.append(0)
+    return output
 
 def word_frequency_threshold(training_file, development_file, counts):
     ## YOUR CODE HERE
-    words = []
-    with open(training_file) as file:
-        for line in file:
-            word = line.strip().split()[0]
-            words.append(word)
-        words = words[1:]
-    tprecision, trecall, tfscore = frequency_threshold_feature(words, 6, counts)
-    # training_performance = [tprecision, trecall, tfscore]
-    # development_performance = [dprecision, drecall, dfscore]
-    # return training_performance, development_performance
-    return None
+    twords, tlabels, dwords, dlabels = [], [], [], []
+    threshold = 6
+    with open(training_file) as tfile:
+        for idx, line in enumerate(tfile):
+            if idx > 0:
+                linewords = line.strip().split()
+                word, label = linewords[0], linewords[1]
+                twords.append(word)
+                tlabels.append(int(label))
+    toutputs = frequency_threshold_feature(twords, threshold, counts)
+    with open(development_file) as dfile:
+        for idx, line in enumerate(dfile):
+            if idx > 0:
+                linewords = line.strip().split()
+                word, label = linewords[0], linewords[1]
+                dwords.append(word)
+                dlabels.append(int(label))
+    doutputs = frequency_threshold_feature(dwords, threshold, counts)
+    tprecision, trecall, tfscore = test_predictions(toutputs, tlabels)
+    dprecision, drecall, dfscore = test_predictions(doutputs, dlabels)
+    training_performance = [tprecision, trecall, tfscore]
+    development_performance = [dprecision, drecall, dfscore]
+    return training_performance, development_performance
 
 ### 2.4: Naive Bayes
         
