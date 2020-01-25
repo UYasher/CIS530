@@ -90,37 +90,40 @@ def load_file(data_file):
 
 ### 2.1: A very simple baseline
 
-########## Testing
-
 ## Makes feature matrix for all complex
 def all_complex_feature(words):
+    return None
 
 ## Labels every word complex
 def all_complex(data_file):
     ## YOUR CODE HERE...
-    performance = [precision, recall, fscore]
-    return performance
+
+    # performance = [precision, recall, fscore]
+    # return performance
+    return None
 
 
 ### 2.2: Word length thresholding
 
 ## Makes feature matrix for word_length_threshold
 def length_threshold_feature(words, threshold):
+    return None
 
 ## Finds the best length threshold by f-score, and uses this threshold to
 ## classify the training and development set
 def word_length_threshold(training_file, development_file):
     ## YOUR CODE HERE
-    training_performance = [tprecision, trecall, tfscore]
-    development_performance = [dprecision, drecall, dfscore]
-    return training_performance, development_performance
+    # training_performance = [tprecision, trecall, tfscore]
+    # development_performance = [dprecision, drecall, dfscore]
+    # return training_performance, development_performance
+    return None
 
 ### 2.3: Word frequency thresholding
 
 ## Loads Google NGram counts
 def load_ngram_counts(ngram_counts_file): 
    counts = defaultdict(int) 
-   with gzip.open(ngram_counts_file, 'rt') as f: 
+   with gzip.open(ngram_counts_file, 'rt', encoding='UTF-8') as f:
        for line in f:
            token, count = line.strip().split('\t') 
            if token[0].islower(): 
@@ -132,30 +135,45 @@ def load_ngram_counts(ngram_counts_file):
 
 ## Make feature matrix for word_frequency_threshold
 def frequency_threshold_feature(words, threshold, counts):
+    output = []
+    labels = []
+    for word in words:
+
+    return None
 
 def word_frequency_threshold(training_file, development_file, counts):
     ## YOUR CODE HERE
-    training_performance = [tprecision, trecall, tfscore]
-    development_performance = [dprecision, drecall, dfscore]
-    return training_performance, development_performance
+    words = []
+    with open(training_file) as file:
+        for line in file:
+            word = line.strip().split()[0]
+            words.append(word)
+        words = words[1:]
+    tprecision, trecall, tfscore = frequency_threshold_feature(words, 6, counts)
+    # training_performance = [tprecision, trecall, tfscore]
+    # development_performance = [dprecision, drecall, dfscore]
+    # return training_performance, development_performance
+    return None
 
 ### 2.4: Naive Bayes
         
 ## Trains a Naive Bayes classifier using length and frequency features
 def naive_bayes(training_file, development_file, counts):
     ## YOUR CODE HERE
-    training_performance = (tprecision, trecall, tfscore)
-    development_performance = (dprecision, drecall, dfscore)
-    return development_performance
+    # training_performance = (tprecision, trecall, tfscore)
+    # development_performance = (dprecision, drecall, dfscore)
+    # return development_performance
+    return None
 
 ### 2.5: Logistic Regression
 
 ## Trains a Naive Bayes classifier using length and frequency features
 def logistic_regression(training_file, development_file, counts):
     ## YOUR CODE HERE    
-    training_performance = (tprecision, trecall, tfscore)
-    development_performance = (dprecision, drecall, dfscore)
-    return development_performance
+    # training_performance = (tprecision, trecall, tfscore)
+    # development_performance = (dprecision, drecall, dfscore)
+    # return development_performance
+    return None
 
 ### 2.7: Build your own classifier
 
@@ -173,3 +191,4 @@ if __name__ == "__main__":
     
     ngram_counts_file = "ngram_counts.txt.gz"
     counts = load_ngram_counts(ngram_counts_file)
+    word_frequency_threshold(training_file, development_file, counts)
