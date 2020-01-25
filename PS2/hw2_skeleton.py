@@ -11,6 +11,10 @@
 
 from collections import defaultdict
 import gzip
+import numpy as np
+from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LogisticRegression
+
 
 #### 1. Evaluation Metrics ####
 
