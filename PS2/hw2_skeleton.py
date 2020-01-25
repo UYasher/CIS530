@@ -152,6 +152,14 @@ def word_length_threshold(training_file, development_file):
     development_performance = [dprecision, drecall, dfscore]
     return training_performance, development_performance
 
+## Make feature matrix consisting of word lengths
+def length_feature(words):
+    lengths = []
+    for i in range(len(words)):
+        lengths.append(len(words[i]))
+
+    return lengths
+
 ### 2.3: Word frequency thresholding
 
 ## Loads Google NGram counts
@@ -188,24 +196,55 @@ def word_frequency_threshold(training_file, development_file, counts):
     return training_performance, development_performance
 
 ### 2.4: Naive Bayes
-        
+
+def get_standard_features(words, frequency_threshold, counts):
+    features = np.array([
+        words,
+        length_feature(words),
+        frequency_threshold_feature(words, frequency_threshold, counts)
+    ])
+
+    return features
+
 ## Trains a Naive Bayes classifier using length and frequency features
 def naive_bayes(training_file, development_file, counts):
-    ## YOUR CODE HERE
-    # training_performance = (tprecision, trecall, tfscore)
-    # development_performance = (dprecision, drecall, dfscore)
-    # return development_performance
-    return None
+    twords, y_true_training = load_file(training_file)
+    dwords, y_true_development = load_file(development_file)
+
+    X_train = get_standard_features(twords, 9, counts)
+    clf = GaussianNB()
+    clf.fit(X_train, y_true_training)
+
+    y_pred_training = clf.predict(twords)
+    y_pred_development = clf.predict(dwords)
+
+    tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
+    dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
+
+    training_performance = (tprecision, trecall, tfscore)
+    development_performance = (dprecision, drecall, dfscore)
+    return development_performance
 
 ### 2.5: Logistic Regression
 
 ## Trains a Naive Bayes classifier using length and frequency features
 def logistic_regression(training_file, development_file, counts):
-    ## YOUR CODE HERE
-    # training_performance = (tprecision, trecall, tfscore)
-    # development_performance = (dprecision, drecall, dfscore)
-    # return development_performance
-    return None
+    twords, y_true_training = load_file(training_file)
+    dwords, y_true_development = load_file(development_file)
+
+    X_train = get_standard_features(twords, 9, counts)
+    clf = LogisticRegression()
+    clf.fit(X_train, y_true_training)
+
+    y_pred_training = clf.predict(twords)
+    y_pred_development = clf.predict(dwords)
+
+    tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
+    dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
+
+    training_performance = (tprecision, trecall, tfscore)
+    development_performance = (dprecision, drecall, dfscore)
+    return development_performance
 
 ### 2.7: Build your own classifier
 
