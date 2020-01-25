@@ -106,11 +106,33 @@ def all_complex(data_file):
 
 ## Makes feature matrix for word_length_threshold
 def length_threshold_feature(words, threshold):
+    length_threshold_array = []
+    for i in range(len(words)):
+        if len(words[i]) > threshold:
+            length_threshold_array.append(1)
+        else:
+            length_threshold_array.append(0)
+
+    return length_threshold_array
 
 ## Finds the best length threshold by f-score, and uses this threshold to
 ## classify the training and development set
 def word_length_threshold(training_file, development_file):
-    ## YOUR CODE HERE
+    twords, y_true_training = load_file(training_file)
+    dwords, y_true_development = load_file(development_file)
+
+    y_pred_training = length_threshold_feature(twords, 0)
+    y_pred_development = length_threshold_feature(dwords, 0)
+
+    tprecision = get_precision(y_pred_training, y_true_training)
+    trecall = get_recall(y_pred_training, y_true_training)
+    tfscore = get_fscore(y_pred_training, y_true_training)
+
+    dprecision = get_precision(y_pred_development, y_true_development)
+    drecall = get_recall(y_pred_development, y_true_development)
+    dfscore = get_fscore(y_pred_development, y_true_development)
+
+
     training_performance = [tprecision, trecall, tfscore]
     development_performance = [dprecision, drecall, dfscore]
     return training_performance, development_performance
