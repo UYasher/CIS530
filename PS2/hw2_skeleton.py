@@ -75,6 +75,7 @@ def test_predictions(y_pred, y_true):
     print("precision: " + str(precision))
     print("recall: " + str(recall))
     print("fscore: " + str(fscore))
+    return precision, recall, fscore
 
 #### 2. Complex Word Identification ####
 
@@ -98,12 +99,15 @@ def load_file(data_file):
 
 ## Makes feature matrix for all complex
 def all_complex_feature(words):
+    return None
 
 ## Labels every word complex
 def all_complex(data_file):
     ## YOUR CODE HERE...
-    performance = [precision, recall, fscore]
-    return performance
+
+    # performance = [precision, recall, fscore]
+    # return performance
+    return None
 
 
 ### 2.2: Word length thresholding
@@ -154,7 +158,7 @@ def length_feature(words):
 ## Loads Google NGram counts
 def load_ngram_counts(ngram_counts_file): 
    counts = defaultdict(int) 
-   with gzip.open(ngram_counts_file, 'rt') as f: 
+   with gzip.open(ngram_counts_file, 'rt', encoding='UTF-8') as f:
        for line in f:
            token, count = line.strip().split('\t') 
            if token[0].islower(): 
@@ -166,9 +170,33 @@ def load_ngram_counts(ngram_counts_file):
 
 ## Make feature matrix for word_frequency_threshold
 def frequency_threshold_feature(words, threshold, counts):
+    output = []
+    for word in words:
+        output.append(1) if counts[word] > threshold else output.append(0)
+    return output
 
 def word_frequency_threshold(training_file, development_file, counts):
     ## YOUR CODE HERE
+    twords, tlabels, dwords, dlabels = [], [], [], []
+    threshold = 6
+    with open(training_file) as tfile:
+        for idx, line in enumerate(tfile):
+            if idx > 0:
+                linewords = line.strip().split()
+                word, label = linewords[0], linewords[1]
+                twords.append(word)
+                tlabels.append(int(label))
+    toutputs = frequency_threshold_feature(twords, threshold, counts)
+    with open(development_file) as dfile:
+        for idx, line in enumerate(dfile):
+            if idx > 0:
+                linewords = line.strip().split()
+                word, label = linewords[0], linewords[1]
+                dwords.append(word)
+                dlabels.append(int(label))
+    doutputs = frequency_threshold_feature(dwords, threshold, counts)
+    tprecision, trecall, tfscore = test_predictions(toutputs, tlabels)
+    dprecision, drecall, dfscore = test_predictions(doutputs, dlabels)
     training_performance = [tprecision, trecall, tfscore]
     development_performance = [dprecision, drecall, dfscore]
     return training_performance, development_performance
