@@ -21,7 +21,8 @@ from sklearn.linear_model import LogisticRegression
 ## Input: y_pred, a list of length n with the predicted labels,
 ## y_true, a list of length n with the true labels
 
-## A helper function for get_precision and get_recall which gives the values of the 2x2 confusion matrix
+## A helper function for get_precision and get_recall
+## Gives the values of the 2x2 confusion matrix
 def get_2by2_confusion_matrix(y_pred, y_true):
     if not len(y_pred) == len(y_true):
         raise IndexError("y_pred and y_true are of different lengths")
