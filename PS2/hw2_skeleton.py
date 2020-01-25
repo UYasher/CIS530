@@ -112,7 +112,7 @@ def all_complex(data_file):
 def length_threshold_feature(words, threshold):
     length_threshold_array = []
     for i in range(len(words)):
-        if len(words[i]) > threshold:
+        if len(words[i]) >= threshold:
             length_threshold_array.append(1)
         else:
             length_threshold_array.append(0)
