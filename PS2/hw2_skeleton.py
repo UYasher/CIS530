@@ -167,23 +167,10 @@ def frequency_threshold_feature(words, threshold, counts):
 
 def word_frequency_threshold(training_file, development_file, counts):
     ## YOUR CODE HERE
-    twords, tlabels, dwords, dlabels = [], [], [], []
     threshold = 6
-    with open(training_file) as tfile:
-        for idx, line in enumerate(tfile):
-            if idx > 0:
-                linewords = line.strip().split()
-                word, label = linewords[0], linewords[1]
-                twords.append(word)
-                tlabels.append(int(label))
+    twords, tlabels = load_file(training_file)
+    dwords, dlabels = load_file(development_file)
     toutputs = frequency_threshold_feature(twords, threshold, counts)
-    with open(development_file) as dfile:
-        for idx, line in enumerate(dfile):
-            if idx > 0:
-                linewords = line.strip().split()
-                word, label = linewords[0], linewords[1]
-                dwords.append(word)
-                dlabels.append(int(label))
     doutputs = frequency_threshold_feature(dwords, threshold, counts)
     tprecision, trecall, tfscore = test_predictions(toutputs, tlabels)
     dprecision, drecall, dfscore = test_predictions(doutputs, dlabels)
