@@ -207,7 +207,19 @@ def naive_bayes(training_file, development_file, counts):
 
 ## Trains a Naive Bayes classifier using length and frequency features
 def logistic_regression(training_file, development_file, counts):
-    ## YOUR CODE HERE    
+    twords, y_true_training = load_file(training_file)
+    dwords, y_true_development = load_file(development_file)
+
+    X_train = get_standard_features(twords, 9, counts)
+    clf = LogisticRegression()
+    clf.fit(X_train, y_true_training)
+
+    y_pred_training = clf.predict(twords)
+    y_pred_development = clf.predict(dwords)
+
+    tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
+    dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
+
     training_performance = (tprecision, trecall, tfscore)
     development_performance = (dprecision, drecall, dfscore)
     return development_performance
