@@ -146,33 +146,6 @@ def word_length_threshold(training_file, development_file, threshold):  # Remove
     return training_performance, development_performance
 
 
-# Plots Precision-Recall Curve over different thresholds for either word length or frequency
-def plot_curve(training_file, development_file, thresholds, use_length):
-    train_recall = []
-    train_prec = []
-    dev_recall = []
-    dev_prec = []
-    for th in thresholds:
-        if use_length:
-            train, dev = word_length_threshold(training_file, development_file, th)
-        else:
-            train, dev = word_frequency_threshold(training_file, development_file, th)
-        train_recall.append(train[1])
-        train_prec.append(train[0])
-        dev_recall.append(dev[1])
-        dev_prec.append(dev[0])
-    fig, axes = plt.subplots(1, 2)
-    feat = 'length' if use_length else 'frequency'
-    fig.suptitle('Precision-Recall Curve for word %s from thresholds %d to %d' % (feat, thresholds[0], thresholds[-1]))
-    axes[0].plot(train_recall, train_prec)
-    axes[0].title('Training data')
-    axes[1].plot(dev_recall, dev_prec)
-    axes[1].title('Development data')
-    for ii in range(2):
-        axes[ii].xlabel('Recall')
-        axes[ii].ylabel('Precision')
-    plt.show()
-
 ## Make feature matrix consisting of word lengths
 def length_feature(words):
     lengths = []
@@ -210,9 +183,8 @@ def frequency_threshold_feature(words, threshold, counts):
         output.append(1) if counts[word] > threshold else output.append(0)
     return output
 
-def word_frequency_threshold(training_file, development_file, counts):
+def word_frequency_threshold(training_file, development_file, counts, threshold):  # Remove the threshold parameter after plotti
     ## YOUR CODE HERE
-    threshold = 6
     twords, tlabels = load_file(training_file)
     dwords, dlabels = load_file(development_file)
     toutputs = frequency_threshold_feature(twords, threshold, counts)
@@ -224,6 +196,34 @@ def word_frequency_threshold(training_file, development_file, counts):
     training_performance = [tprecision, trecall, tfscore]
     development_performance = [dprecision, drecall, dfscore]
     return training_performance, development_performance
+
+
+# Plots Precision-Recall Curve over different thresholds for either word length or frequency baselines
+def plot_curve_baseline(training_file, development_file, counts, thresholds, use_length):
+    train_recall = []
+    train_prec = []
+    dev_recall = []
+    dev_prec = []
+    for th in thresholds:
+        if use_length:
+            train, dev = word_length_threshold(training_file, development_file, th)
+        else:
+            train, dev = word_frequency_threshold(training_file, development_file, counts, th)
+        train_recall.append(train[1])
+        train_prec.append(train[0])
+        dev_recall.append(dev[1])
+        dev_prec.append(dev[0])
+    fig, axes = plt.subplots(1, 2)
+    feat = 'length' if use_length else 'frequency'
+    fig.suptitle('Precision-Recall Curve for word %s from thresholds %d to %d' % (feat, thresholds[0], thresholds[-1]))
+    axes[0].plot(train_recall, train_prec)
+    axes[0].title('Training data')
+    axes[1].plot(dev_recall, dev_prec)
+    axes[1].title('Development data')
+    for ii in range(2):
+        axes[ii].xlabel('Recall')
+        axes[ii].ylabel('Precision')
+    plt.show()
 
 ### 2.4: Naive Bayes
 
@@ -242,17 +242,18 @@ def get_standard_features(words, frequency_threshold, counts):
 
     return features
 
+
 ## Trains a Naive Bayes classifier using length and frequency features
 def naive_bayes(training_file, development_file, counts):
     twords, y_true_training = load_file(training_file)
     dwords, y_true_development = load_file(development_file)
 
     # X_train = get_standard_features(twords, 9, counts)
-    X_train = my_features(twords, counts)
+    X_train, train_stats = features_train(twords, counts)
     clf = GaussianNB()
     clf.fit(X_train, y_true_training)
 
-    X_dev = my_features(dwords, counts)
+    X_dev = features_test(dwords, counts, train_stats)
     y_pred_training = clf.predict(X_train)
     y_pred_development = clf.predict(X_dev)
 
@@ -265,6 +266,7 @@ def naive_bayes(training_file, development_file, counts):
     development_performance = (dprecision, drecall, dfscore)
     return development_performance
 
+
 ### 2.5: Logistic Regression
 
 ## Trains a Naive Bayes classifier using length and frequency features
@@ -273,11 +275,11 @@ def logistic_regression(training_file, development_file, counts):
     dwords, y_true_development = load_file(development_file)
 
     # X_train = get_standard_features(twords, 9, counts)
-    X_train = my_features(twords, counts)
+    X_train, train_stats = features_train(twords, counts)
     clf = LogisticRegression()
     clf.fit(X_train, y_true_training)
 
-    X_dev = my_features(dwords, counts)
+    X_dev = features_test(dwords, counts, train_stats)
     y_pred_training = clf.predict(X_train)
     y_pred_development = clf.predict(X_dev)
 
@@ -293,15 +295,28 @@ def logistic_regression(training_file, development_file, counts):
 ### 2.7: Build your own classifier
 
 
-# Extracts features for every word within the 'words' list with reference to
-# the 'counts' dictionary
-def my_features(words, counts):
-    length_feats = length_feature(words)
-    freq_feats = frequency_features(words, counts)
+# Feature extraction method for training data
+def features_train(words, counts):
+    length_feats = np.array(length_feature(words))
+    length_mean = np.mean(length_feats, axis=0)
+    length_std = np.std(length_feats, axis=0)
+    freq_feats = np.array(frequency_features(words, counts))
+    freq_mean = np.mean(freq_feats, axis=0)
+    freq_std = np.std(freq_feats, axis=0)
     # Normalize features
     length_feats = np.array(zscore(length_feats))
     freq_feats = np.array(zscore(freq_feats))
+    return np.c_[length_feats, freq_feats], [length_mean, length_std, freq_mean, freq_std]
+
+
+# Feature extraction method for testing (development) data
+def features_test(words, counts, train_stats):
+    length_feats = np.array(length_feature(words))
+    length_feats = (length_feats - train_stats[0]) / train_stats[1]
+    freq_feats = np.array(frequency_features(words, counts))
+    freq_feats = (freq_feats - train_stats[2]) / train_stats[3]
     return np.c_[length_feats, freq_feats]
+
 
 ## Trains a classifier of your choosing, predicts labels for the test dataset
 ## and writes the predicted labels to the text file 'test_labels.txt',
@@ -317,7 +332,8 @@ if __name__ == "__main__":
     
     ngram_counts_file = "ngram_counts.txt.gz"
     counts = load_ngram_counts(ngram_counts_file)
-    naive_bayes_results = naive_bayes(training_file, development_file, counts)
-    logistic_regression_results = logistic_regression(training_file, development_file, counts)
-    print(naive_bayes_results)
-    print(logistic_regression_results)
+
+    # naive_bayes_results = naive_bayes(training_file, development_file, counts)
+    # logistic_regression_results = logistic_regression(training_file, development_file, counts)
+    # print(naive_bayes_results)
+    # print(logistic_regression_results)
