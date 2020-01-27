@@ -15,7 +15,13 @@ import numpy as np
 from scipy.stats import zscore
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, VotingClassifier
+from sklearn.neural_network import MLPClassifier
+from xgboost import XGBClassifier, XGBRFClassifier
 import matplotlib.pyplot as plt
 
 
@@ -248,28 +254,11 @@ def features_test(words, counts, train_stats):
 
 ### 2.4: Naive Bayes
 
-def get_standard_features(words, frequency_threshold, counts):
-    length_array = length_feature(words)
-
-    scaler = StandardScaler()
-    scaler.fit(scaler)
-    scaled_length_array = scaler.transform(length_array)
-
-    features = np.array([
-        words,
-        scaled_length_array,
-        frequency_threshold_feature(words, frequency_threshold, counts)
-    ])
-
-    return features
-
-
 ## Trains a Naive Bayes classifier using length and frequency features
 def naive_bayes(training_file, development_file, counts):
     twords, y_true_training = load_file(training_file)
     dwords, y_true_development = load_file(development_file)
 
-    # X_train = get_standard_features(twords, 9, counts)
     X_train, train_stats = features_train(twords, counts)
     clf = GaussianNB()
     clf.fit(X_train, y_true_training)
@@ -295,7 +284,6 @@ def logistic_regression(training_file, development_file, counts):
     twords, y_true_training = load_file(training_file)
     dwords, y_true_development = load_file(development_file)
 
-    # X_train = get_standard_features(twords, 9, counts)
     X_train, train_stats = features_train(twords, counts)
     clf = LogisticRegression()
     clf.fit(X_train, y_true_training)
@@ -317,6 +305,40 @@ def logistic_regression(training_file, development_file, counts):
 
 # Features
 
+def test_all_classifiers(training_file, development_file, counts):
+    twords, y_true_training = load_file(training_file)
+    dwords, y_true_development = load_file(development_file)
+
+    X_train, train_stats = features_train(twords, counts)
+    X_dev = features_test(dwords, counts, train_stats)
+
+    models = []
+    models.append(('LR', LogisticRegression()))
+    models.append(('LDA', LinearDiscriminantAnalysis()))
+    models.append(('KNN', KNeighborsClassifier()))
+    models.append(('CART', DecisionTreeClassifier()))
+    models.append(('NB', GaussianNB()))
+    models.append(('SVM', SVC(gamma='auto', probability=True)))
+    models.append(('RF', RandomForestClassifier()))
+    models.append(('ADA', AdaBoostClassifier()))
+    models.append(('GB', GradientBoostingClassifier()))
+    models.append(('XGB', XGBClassifier()))
+    models.append(('XGBRF', XGBRFClassifier()))
+    models.append(('MLP', MLPClassifier()))
+
+    for model in models:
+        model[1].fit(X_train, y_true_training)
+        y_pred_training = model[1].predict(X_train)
+        y_pred_development = model[1].predict(X_dev)
+        print(model[0])
+        print("=====Training=====")
+        tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
+        print("=====Development=====")
+        dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
+
+        if model[0] == 'MLP':
+            #models.append(('Voting', VotingClassifier(list(models), voting="soft")))
+            models.append(('Voting2', VotingClassifier(list(models[9:12]), voting="soft")))
 
 # Make feature matrix consisting of word lengths
 def length_feature(words):
@@ -409,3 +431,5 @@ if __name__ == "__main__":
     # logistic_regression_results = logistic_regression(training_file, development_file, counts)
     # print(naive_bayes_results)
     # print(logistic_regression_results)
+
+    test_all_classifiers(training_file, development_file, counts)
