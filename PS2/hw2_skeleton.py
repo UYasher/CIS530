@@ -70,9 +70,9 @@ def test_predictions(y_pred, y_true):
     precision = get_precision(y_pred, y_true)
     recall = get_recall(y_pred, y_true)
     fscore = get_fscore(y_pred, y_true)
-    # print("precision: " + str(precision))
-    # print("recall: " + str(recall))
-    # print("fscore: " + str(fscore))
+    print("precision: " + str(precision))
+    print("recall: " + str(recall))
+    print("fscore: " + str(fscore))
     return precision, recall, fscore
 
 #### 2. Complex Word Identification ####
@@ -181,8 +181,6 @@ def frequency_threshold_feature(words, threshold, counts):
     output = []
     for word in words:
         output.append(0) if counts[word] > threshold else output.append(1)
-    print('Length:', len(output))
-    print('Sum:', sum(output))
     return output
 
 def word_frequency_threshold(training_file, development_file, counts, threshold):  # Remove the threshold parameter after plotti
@@ -204,8 +202,10 @@ def word_frequency_threshold(training_file, development_file, counts, threshold)
 def plot_curve_baseline(training_file, development_file, counts, thresholds, use_length):
     train_recall = []
     train_prec = []
+    train_f1 = []
     dev_recall = []
     dev_prec = []
+    dev_f1 = []
     for th in thresholds:
         if use_length:
             train, dev = word_length_threshold(training_file, development_file, th)
@@ -213,16 +213,24 @@ def plot_curve_baseline(training_file, development_file, counts, thresholds, use
             train, dev = word_frequency_threshold(training_file, development_file, counts, th)
         train_recall.append(train[1])
         train_prec.append(train[0])
+        train_f1.append(train[2])
         dev_recall.append(dev[1])
         dev_prec.append(dev[0])
+        dev_f1.append(dev[2])
+    train_idx = train_f1.index(max(train_f1))
+    dev_idx = dev_f1.index(max(dev_f1))
+    # print('----------------')
+    # print('Threshold: ', thresholds[train_idx])
+    # print(train_prec[train_idx], train_recall[train_idx], train_f1[train_idx])
+    # print(dev_prec[train_idx], dev_recall[train_idx], dev_f1[train_idx])
+    # print(dev_prec[dev_idx], dev_recall[dev_idx], dev_f1[dev_idx])
     fig, axes = plt.subplots(1, 2)
     feat = 'length' if use_length else 'frequency'
-    fig.suptitle('Precision-Recall Curve for word %s from thresholds %d to %d' % (feat, thresholds[0], thresholds[-1]),
-                 y=1.08)
     axes[0].plot(train_recall, train_prec, 'r')
     axes[0].title.set_text('Training data')
     axes[1].plot(dev_recall, dev_prec, 'b')
     axes[1].title.set_text('Development data')
+    fig.suptitle('Precision-Recall Curve for word %s' % feat, fontweight='bold', y=1.0)
     for ii in range(2):
         axes[ii].set_xlabel('Recall')
         axes[ii].set_ylabel('Precision')
@@ -337,7 +345,7 @@ if __name__ == "__main__":
     counts = load_ngram_counts(ngram_counts_file)
 
     # t, d = word_frequency_threshold(training_file, development_file, counts, 1e8)
-
+    # plot_curve_baseline(training_file, development_file, counts, thresholds=np.arange(1, 13), use_length=True)
     plot_curve_baseline(training_file, development_file, counts, thresholds=np.arange(1e6, 1e8 + 1, 1e5), use_length=False)
 
     # naive_bayes_results = naive_bayes(training_file, development_file, counts)
