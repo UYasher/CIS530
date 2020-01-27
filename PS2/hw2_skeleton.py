@@ -70,9 +70,9 @@ def test_predictions(y_pred, y_true):
     precision = get_precision(y_pred, y_true)
     recall = get_recall(y_pred, y_true)
     fscore = get_fscore(y_pred, y_true)
-    print("precision: " + str(precision))
-    print("recall: " + str(recall))
-    print("fscore: " + str(fscore))
+    # print("precision: " + str(precision))
+    # print("recall: " + str(recall))
+    # print("fscore: " + str(fscore))
     return precision, recall, fscore
 
 #### 2. Complex Word Identification ####
@@ -180,7 +180,9 @@ def frequency_features(words, counts):
 def frequency_threshold_feature(words, threshold, counts):
     output = []
     for word in words:
-        output.append(1) if counts[word] > threshold else output.append(0)
+        output.append(0) if counts[word] > threshold else output.append(1)
+    print('Length:', len(output))
+    print('Sum:', sum(output))
     return output
 
 def word_frequency_threshold(training_file, development_file, counts, threshold):  # Remove the threshold parameter after plotti
@@ -189,9 +191,9 @@ def word_frequency_threshold(training_file, development_file, counts, threshold)
     dwords, dlabels = load_file(development_file)
     toutputs = frequency_threshold_feature(twords, threshold, counts)
     doutputs = frequency_threshold_feature(dwords, threshold, counts)
-    print("=====Training=====")
+    # print("=====Training=====")
     tprecision, trecall, tfscore = test_predictions(toutputs, tlabels)
-    print("=====Development=====")
+    # print("=====Development=====")
     dprecision, drecall, dfscore = test_predictions(doutputs, dlabels)
     training_performance = [tprecision, trecall, tfscore]
     development_performance = [dprecision, drecall, dfscore]
@@ -334,7 +336,9 @@ if __name__ == "__main__":
     ngram_counts_file = "ngram_counts.txt.gz"
     counts = load_ngram_counts(ngram_counts_file)
 
-    plot_curve_baseline(training_file, development_file, counts, thresholds=np.arange(5, 15), use_length=True)
+    # t, d = word_frequency_threshold(training_file, development_file, counts, 1e8)
+
+    plot_curve_baseline(training_file, development_file, counts, thresholds=np.arange(1e6, 1e8 + 1, 1e5), use_length=False)
 
     # naive_bayes_results = naive_bayes(training_file, development_file, counts)
     # logistic_regression_results = logistic_regression(training_file, development_file, counts)
