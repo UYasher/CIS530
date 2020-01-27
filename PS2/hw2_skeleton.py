@@ -41,7 +41,7 @@ def get_2by2_confusion_matrix(y_pred, y_true):
                 fn += 1
         else:
             if y_pred[i] == 1:
-                fp = 1
+                fp += 1
             else:
                 tn += 1
     return tp, fn, fp, tn
@@ -215,7 +215,8 @@ def plot_curve_baseline(training_file, development_file, counts, thresholds, use
         dev_prec.append(dev[0])
     fig, axes = plt.subplots(1, 2)
     feat = 'length' if use_length else 'frequency'
-    fig.suptitle('Precision-Recall Curve for word %s from thresholds %d to %d' % (feat, thresholds[0], thresholds[-1]))
+    fig.suptitle('Precision-Recall Curve for word %s from thresholds %d to %d' % (feat, thresholds[0], thresholds[-1]),
+                 y=1.08)
     axes[0].plot(train_recall, train_prec, 'r')
     axes[0].title.set_text('Training data')
     axes[1].plot(dev_recall, dev_prec, 'b')
