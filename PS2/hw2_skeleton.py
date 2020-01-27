@@ -216,13 +216,13 @@ def plot_curve_baseline(training_file, development_file, counts, thresholds, use
     fig, axes = plt.subplots(1, 2)
     feat = 'length' if use_length else 'frequency'
     fig.suptitle('Precision-Recall Curve for word %s from thresholds %d to %d' % (feat, thresholds[0], thresholds[-1]))
-    axes[0].plot(train_recall, train_prec)
-    axes[0].title('Training data')
-    axes[1].plot(dev_recall, dev_prec)
-    axes[1].title('Development data')
+    axes[0].plot(train_recall, train_prec, 'r')
+    axes[0].title.set_text('Training data')
+    axes[1].plot(dev_recall, dev_prec, 'b')
+    axes[1].title.set_text('Development data')
     for ii in range(2):
-        axes[ii].xlabel('Recall')
-        axes[ii].ylabel('Precision')
+        axes[ii].set_xlabel('Recall')
+        axes[ii].set_ylabel('Precision')
     plt.show()
 
 ### 2.4: Naive Bayes
@@ -332,6 +332,8 @@ if __name__ == "__main__":
     
     ngram_counts_file = "ngram_counts.txt.gz"
     counts = load_ngram_counts(ngram_counts_file)
+
+    plot_curve_baseline(training_file, development_file, counts, thresholds=np.arange(5, 15), use_length=True)
 
     # naive_bayes_results = naive_bayes(training_file, development_file, counts)
     # logistic_regression_results = logistic_regression(training_file, development_file, counts)
