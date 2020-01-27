@@ -97,6 +97,19 @@ def load_file(data_file):
             i += 1
     return words, labels
 
+
+def load_test_file(data_file):
+    words = []
+    labels = []
+    with open(data_file, 'rt', encoding="utf8") as f:
+        i = 0
+        for line in f:
+            if i > 0:
+                line_split = line[:-1].split("\t")
+                words.append(line_split[0].lower())
+            i += 1
+    return words
+
 ### 2.1: A very simple baseline
 
 ########## Testing
@@ -410,9 +423,9 @@ def syllable_length(words):
 # Computes occurrences of rare alphabets within each word
 def rare_members(words):
     rare_outputs = [0 for _ in words]
-    rare_chars = ['v', 'w', 'x', 'z']
+    rare_chars = ['j', 'q', 'x', 'z']
     for idx, word in enumerate(words):
-        for char in words:
+        for char in word:
             if char in rare_chars:
                 rare_outputs[idx] += 1
     return rare_outputs
@@ -431,9 +444,12 @@ def mode_count(words):
 ## and writes the predicted labels to the text file 'test_labels.txt',
 ## with ONE LABEL PER LINE
 
-def test_all_classifiers(training_file, development_file, counts):
+def test_all_classifiers(training_file, development_file, counts, test=False):
     twords, y_true_training = load_file(training_file)
-    dwords, y_true_development = load_file(development_file)
+    if test:
+        dwords = load_test_file(development_file)
+    else:
+        dwords, y_true_development = load_file(development_file)
 
     X_train, train_stats = features_train_custom(twords, counts)
     X_dev = features_test_custom(dwords, counts, train_stats)
@@ -452,19 +468,24 @@ def test_all_classifiers(training_file, development_file, counts):
     models.append(('XGBRF', XGBRFClassifier()))
     models.append(('MLP', MLPClassifier()))
 
-    for model in models:
+    for idx, model in enumerate(models):
         model[1].fit(X_train, y_true_training)
         y_pred_training = model[1].predict(X_train)
         y_pred_development = model[1].predict(X_dev)
         print(model[0])
         print("=====Training=====")
         tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
-        print("=====Development=====")
-        dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
+        if not test:
+            print("=====Development=====")
+            dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
 
         if model[0] == 'MLP':
             #models.append(('Voting', VotingClassifier(list(models), voting="soft")))
             models.append(('Voting2', VotingClassifier(list(models[9:12]), voting="soft")))
+
+        if idx == 9:
+            return y_pred_development
+
 
 if __name__ == "__main__":
     training_file = "data/complex_words_training.txt"
@@ -485,4 +506,7 @@ if __name__ == "__main__":
     # print(naive_bayes_results)
     # print(logistic_regression_results)
 
-    test_all_classifiers(training_file, development_file, counts)
+    predictions = test_all_classifiers(training_file, test_file, counts, test=True)
+    with open('test_labels.txt', 'a') as file:
+        for pred in predictions:
+            file.write(str(pred) + '\n')
