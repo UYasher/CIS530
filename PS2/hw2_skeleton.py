@@ -146,13 +146,6 @@ def word_length_threshold(training_file, development_file, threshold):  # Remove
     return training_performance, development_performance
 
 
-## Make feature matrix consisting of word lengths
-def length_feature(words):
-    lengths = []
-    for i in range(len(words)):
-        lengths.append(len(words[i]))
-    return lengths
-
 ### 2.3: Word frequency thresholding
 
 ## Loads Google NGram counts
@@ -167,14 +160,6 @@ def load_ngram_counts(ngram_counts_file):
 
 # Finds the best frequency threshold by f-score, and uses this threshold to
 ## classify the training and development set
-
-
-# Computes raw frequencies
-def frequency_features(words, counts):
-    frequencies = []
-    for word in words:
-        frequencies.append(counts[word])
-    return frequencies
 
 ## Make feature matrix for word_frequency_threshold
 def frequency_threshold_feature(words, threshold, counts):
@@ -235,6 +220,31 @@ def plot_curve_baseline(training_file, development_file, counts, thresholds, use
         axes[ii].set_xlabel('Recall')
         axes[ii].set_ylabel('Precision')
     plt.show()
+
+# Normalization methods for classifiers
+
+# Feature extraction method for training data
+def features_train(words, counts):
+    length_feats = np.array(length_feature(words))
+    length_mean = np.mean(length_feats, axis=0)
+    length_std = np.std(length_feats, axis=0)
+    freq_feats = np.array(frequency_features(words, counts))
+    freq_mean = np.mean(freq_feats, axis=0)
+    freq_std = np.std(freq_feats, axis=0)
+    # Normalize features
+    length_feats = np.array(zscore(length_feats))
+    freq_feats = np.array(zscore(freq_feats))
+    return np.c_[length_feats, freq_feats], [length_mean, length_std, freq_mean, freq_std]
+
+
+# Feature extraction method for testing (development) data
+def features_test(words, counts, train_stats):
+    length_feats = np.array(length_feature(words))
+    length_feats = (length_feats - train_stats[0]) / train_stats[1]
+    freq_feats = np.array(frequency_features(words, counts))
+    freq_feats = (freq_feats - train_stats[2]) / train_stats[3]
+    return np.c_[length_feats, freq_feats]
+
 
 ### 2.4: Naive Bayes
 
@@ -305,28 +315,75 @@ def logistic_regression(training_file, development_file, counts):
 
 ### 2.7: Build your own classifier
 
-
-# Feature extraction method for training data
-def features_train(words, counts):
-    length_feats = np.array(length_feature(words))
-    length_mean = np.mean(length_feats, axis=0)
-    length_std = np.std(length_feats, axis=0)
-    freq_feats = np.array(frequency_features(words, counts))
-    freq_mean = np.mean(freq_feats, axis=0)
-    freq_std = np.std(freq_feats, axis=0)
-    # Normalize features
-    length_feats = np.array(zscore(length_feats))
-    freq_feats = np.array(zscore(freq_feats))
-    return np.c_[length_feats, freq_feats], [length_mean, length_std, freq_mean, freq_std]
+# Features
 
 
-# Feature extraction method for testing (development) data
-def features_test(words, counts, train_stats):
-    length_feats = np.array(length_feature(words))
-    length_feats = (length_feats - train_stats[0]) / train_stats[1]
-    freq_feats = np.array(frequency_features(words, counts))
-    freq_feats = (freq_feats - train_stats[2]) / train_stats[3]
-    return np.c_[length_feats, freq_feats]
+# Make feature matrix consisting of word lengths
+def length_feature(words):
+    lengths = []
+    for i in range(len(words)):
+        lengths.append(len(words[i]))
+    return lengths
+
+
+# Computes raw frequencies
+def frequency_features(words, counts):
+    frequencies = []
+    for word in words:
+        frequencies.append(counts[word])
+    return frequencies
+
+
+# Computes number of vowels within each word
+def vowel_features(words):
+    vowels = []
+    vowel_list = ['a', 'e', 'i', 'o', 'u']
+    for word in words:
+        char_list = [1 for char in word if char in vowel_list]
+        vowels.append(len(char_list) / len(word))
+    return vowels
+
+
+# Computes average length between syllables in each word
+def syllable_length(words):
+    sy_lengths_mean = []
+    sy_lengths_max = []
+    vowel_list = ['a', 'e', 'i', 'o', 'u']
+    for word in words:
+        word_sy = []
+        cnt = 0
+        for idx, char in enumerate(word):
+            if char in vowel_list:
+                word_sy.append(cnt)
+                cnt = 0
+            elif idx == len(word) - 1:
+                cnt += 1
+                word_sy.append(cnt)
+            else:
+                cnt += 1
+        sy_lengths_mean.append(np.mean(np.array(word_sy), axis=0))
+        sy_lengths_max.append(max(word_sy))
+    return sy_lengths_mean, sy_lengths_max
+
+
+# Computes occurrences of rare alphabets within each word
+def rare_members(words):
+    rare_outputs = [0 for _ in words]
+    rare_chars = ['v', 'w', 'x', 'z']
+    for idx, word in enumerate(words):
+        for char in words:
+            if char in rare_chars:
+                rare_outputs[idx] += 1
+    return rare_outputs
+
+
+# Computes how many times the most frequent letter appears within each word
+def mode_count(words):
+    mode_outputs = [0 for _ in words]
+    for idx, word in enumerate(words):
+        maxchar = max(set(word), key=word.count)
+        mode_outputs[idx] += word.count(maxchar) - 1
+    return mode_outputs
 
 
 ## Trains a classifier of your choosing, predicts labels for the test dataset
@@ -346,7 +403,7 @@ if __name__ == "__main__":
 
     # t, d = word_frequency_threshold(training_file, development_file, counts, 1e8)
     # plot_curve_baseline(training_file, development_file, counts, thresholds=np.arange(1, 13), use_length=True)
-    plot_curve_baseline(training_file, development_file, counts, thresholds=np.arange(1e6, 1e8 + 1, 1e5), use_length=False)
+    # plot_curve_baseline(training_file, development_file, counts, thresholds=np.arange(1e6, 1e8 + 1, 1e5), use_length=False)
 
     # naive_bayes_results = naive_bayes(training_file, development_file, counts)
     # logistic_regression_results = logistic_regression(training_file, development_file, counts)
