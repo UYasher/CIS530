@@ -227,9 +227,8 @@ def plot_curve_baseline(training_file, development_file, counts, thresholds, use
         axes[ii].set_ylabel('Precision')
     plt.show()
 
-# Normalization methods for classifiers
 
-# Feature extraction method for training data
+# Baseline feature extraction method for training data
 def features_train(words, counts):
     length_feats = np.array(length_feature(words))
     length_mean = np.mean(length_feats, axis=0)
@@ -303,42 +302,62 @@ def logistic_regression(training_file, development_file, counts):
 
 ### 2.7: Build your own classifier
 
+# Normalization methods for classifiers
+
+def features_train_custom(words, counts):
+    length_feats = np.array(length_feature(words))
+    length_mean = np.mean(length_feats, axis=0)
+    length_std = np.std(length_feats, axis=0)
+    freq_feats = np.array(frequency_features(words, counts))
+    freq_mean = np.mean(freq_feats, axis=0)
+    freq_std = np.std(freq_feats, axis=0)
+    vowel_feats = np.array(vowel_features(words))
+    vowel_mean = np.mean(vowel_feats, axis=0)
+    vowel_std = np.std(vowel_feats, axis=0)
+    sy_mean, sy_max = syllable_length(words)
+    sy_mean, sy_max = np.array(sy_mean), np.array(sy_max)
+    sy_mean_mean = np.mean(sy_mean, axis=0)
+    sy_mean_std = np.std(sy_mean, axis=0)
+    sy_max_mean = np.mean(sy_max, axis=0)
+    sy_max_std = np.std(sy_max, axis=0)
+    rare_feats = np.array(rare_members(words))
+    rare_mean = np.mean(rare_feats, axis=0)
+    rare_std = np.std(rare_feats, axis=0)
+    mode_feats = np.array(mode_count(words))
+    mode_mean = np.mean(mode_feats, axis=0)
+    mode_std = np.std(mode_feats, axis=0)
+    # Normalize features
+    length_feats = np.array(zscore(length_feats))
+    freq_feats = np.array(zscore(freq_feats))
+    vowel_feats = np.array(zscore(vowel_feats))
+    sy_mean = np.array(zscore(sy_mean))
+    sy_max = np.array(zscore(sy_max))
+    rare_feats = np.array(zscore(rare_feats))
+    mode_feats = np.array(zscore(mode_feats))
+    return np.c_[length_feats, freq_feats, vowel_feats, sy_mean, sy_max, rare_feats, mode_feats], \
+           [length_mean, length_std, freq_mean, freq_std, vowel_mean, vowel_std, sy_mean_mean, sy_mean_std,
+            sy_max_mean, sy_max_std, rare_mean, rare_std, mode_mean, mode_std]
+
+
+# Feature extraction method for testing (development) data
+def features_test_custom(words, counts, train_stats):
+    length_feats = np.array(length_feature(words))
+    length_feats = (length_feats - train_stats[0]) / train_stats[1]
+    freq_feats = np.array(frequency_features(words, counts))
+    freq_feats = (freq_feats - train_stats[2]) / train_stats[3]
+    vowel_feats = np.array(vowel_features(words))
+    vowel_feats = (vowel_feats - train_stats[4]) / train_stats[5]
+    sy_mean = np.array(syllable_length(words)[0])
+    sy_mean = (sy_mean - train_stats[6]) / train_stats[7]
+    sy_max = np.array(syllable_length(words)[1])
+    sy_max = (sy_max - train_stats[8]) / train_stats[9]
+    rare_feats = np.array(rare_members(words))
+    rare_feats = (rare_feats - train_stats[10]) / train_stats[11]
+    mode_feats = np.array(mode_count(words))
+    mode_feats = (mode_feats - train_stats[12]) / train_stats[13]
+    return np.c_[length_feats, freq_feats, vowel_feats, sy_mean, sy_max, rare_feats, mode_feats]
+
 # Features
-
-def test_all_classifiers(training_file, development_file, counts):
-    twords, y_true_training = load_file(training_file)
-    dwords, y_true_development = load_file(development_file)
-
-    X_train, train_stats = features_train(twords, counts)
-    X_dev = features_test(dwords, counts, train_stats)
-
-    models = []
-    models.append(('LR', LogisticRegression()))
-    models.append(('LDA', LinearDiscriminantAnalysis()))
-    models.append(('KNN', KNeighborsClassifier()))
-    models.append(('CART', DecisionTreeClassifier()))
-    models.append(('NB', GaussianNB()))
-    models.append(('SVM', SVC(gamma='auto', probability=True)))
-    models.append(('RF', RandomForestClassifier()))
-    models.append(('ADA', AdaBoostClassifier()))
-    models.append(('GB', GradientBoostingClassifier()))
-    models.append(('XGB', XGBClassifier()))
-    models.append(('XGBRF', XGBRFClassifier()))
-    models.append(('MLP', MLPClassifier()))
-
-    for model in models:
-        model[1].fit(X_train, y_true_training)
-        y_pred_training = model[1].predict(X_train)
-        y_pred_development = model[1].predict(X_dev)
-        print(model[0])
-        print("=====Training=====")
-        tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
-        print("=====Development=====")
-        dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
-
-        if model[0] == 'MLP':
-            #models.append(('Voting', VotingClassifier(list(models), voting="soft")))
-            models.append(('Voting2', VotingClassifier(list(models[9:12]), voting="soft")))
 
 # Make feature matrix consisting of word lengths
 def length_feature(words):
@@ -412,6 +431,40 @@ def mode_count(words):
 ## and writes the predicted labels to the text file 'test_labels.txt',
 ## with ONE LABEL PER LINE
 
+def test_all_classifiers(training_file, development_file, counts):
+    twords, y_true_training = load_file(training_file)
+    dwords, y_true_development = load_file(development_file)
+
+    X_train, train_stats = features_train_custom(twords, counts)
+    X_dev = features_test_custom(dwords, counts, train_stats)
+
+    models = []
+    models.append(('LR', LogisticRegression()))
+    models.append(('LDA', LinearDiscriminantAnalysis()))
+    models.append(('KNN', KNeighborsClassifier()))
+    models.append(('CART', DecisionTreeClassifier()))
+    models.append(('NB', GaussianNB()))
+    models.append(('SVM', SVC(gamma='auto', probability=True)))
+    models.append(('RF', RandomForestClassifier()))
+    models.append(('ADA', AdaBoostClassifier()))
+    models.append(('GB', GradientBoostingClassifier()))
+    models.append(('XGB', XGBClassifier()))
+    models.append(('XGBRF', XGBRFClassifier()))
+    models.append(('MLP', MLPClassifier()))
+
+    for model in models:
+        model[1].fit(X_train, y_true_training)
+        y_pred_training = model[1].predict(X_train)
+        y_pred_development = model[1].predict(X_dev)
+        print(model[0])
+        print("=====Training=====")
+        tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
+        print("=====Development=====")
+        dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
+
+        if model[0] == 'MLP':
+            #models.append(('Voting', VotingClassifier(list(models), voting="soft")))
+            models.append(('Voting2', VotingClassifier(list(models[9:12]), voting="soft")))
 
 if __name__ == "__main__":
     training_file = "data/complex_words_training.txt"
