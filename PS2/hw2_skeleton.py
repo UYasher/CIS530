@@ -22,7 +22,9 @@ from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, VotingClassifier
 from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier, XGBRFClassifier
+from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
+from itertools import combinations
 
 
 #### 1. Evaluation Metrics ####
@@ -454,6 +456,13 @@ def test_all_classifiers(training_file, development_file, counts, test=False):
     X_train, train_stats = features_train_custom(twords, counts)
     X_dev = features_test_custom(dwords, counts, train_stats)
 
+    X_train = X_train[:,
+              [j for j in range(np.size(X_train, 1)) if "11110111"[j] == "1"]
+              ]
+    X_dev = X_dev[:,
+            [j for j in range(np.size(X_dev, 1)) if "11110111"[j] == "1"]
+            ]
+
     models = []
     models.append(('LR', LogisticRegression()))
     models.append(('LDA', LinearDiscriminantAnalysis()))
@@ -481,10 +490,120 @@ def test_all_classifiers(training_file, development_file, counts, test=False):
 
         if model[0] == 'MLP':
             #models.append(('Voting', VotingClassifier(list(models), voting="soft")))
-            models.append(('Voting2', VotingClassifier(list(models[9:12]), voting="soft")))
+            models.append(('Voting2', VotingClassifier(list(models[7:12]), voting="soft")))
 
-        if idx == 9:
-            return y_pred_development
+        if model[0] == "XGB":
+           return y_pred_development
+
+
+def test_all_classifiers_all_feature_sets(training_file, development_file, counts, test=False):
+    twords, y_true_training = load_file(training_file)
+    if test:
+        dwords = load_test_file(development_file)
+    else:
+        dwords, y_true_development = load_file(development_file)
+
+    X_train_full, train_stats = features_train_custom(twords, counts)
+    X_dev_full = features_test_custom(dwords, counts, train_stats)
+
+    models = []
+    models.append(('LR', LogisticRegression()))
+    models.append(('LDA', LinearDiscriminantAnalysis()))
+    models.append(('KNN', KNeighborsClassifier()))
+    models.append(('CART', DecisionTreeClassifier()))
+    models.append(('NB', GaussianNB()))
+    models.append(('SVM', SVC(gamma='auto', probability=True)))
+    models.append(('RF', RandomForestClassifier()))
+    models.append(('ADA', AdaBoostClassifier()))
+    models.append(('GB', GradientBoostingClassifier()))
+    models.append(('XGB', XGBClassifier()))
+    models.append(('XGBRF', XGBRFClassifier()))
+    models.append(('MLP', MLPClassifier()))
+
+    results = []
+
+    #input(np.size(X_train_full, 1))
+
+    for i in range(2**np.size(X_train_full, 1) - 1):
+            feature_set = str(bin(i+1))[2:]
+            if 6 >  feature_set.count("1") >= 5:
+                while len(feature_set) < np.size(X_train_full, 1) - 1:
+                    feature_set = "0" + feature_set
+                feature_set = "1" + feature_set
+                print(feature_set)
+                print([j for j in range(np.size(X_train_full, 1)) if feature_set[j] == "1"])
+                X_train = X_train_full[:,
+                    [j for j in range(np.size(X_train_full, 1)) if feature_set[j] == "1"]
+                ]
+                X_dev = X_dev_full[:,
+                    [j for j in range(np.size(X_dev_full, 1)) if feature_set[j] == "1"]
+                ]
+                print(X_train.shape)
+
+                for model in models:
+                    model[1].fit(X_train, y_true_training)
+                    y_pred_training = model[1].predict(X_train)
+                    y_pred_development = model[1].predict(X_dev)
+                    print(model[0])
+                    print("=====Training=====")
+                    tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
+                    if not test:
+                        print("=====Development=====")
+                        dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
+
+                    if model[0] == 'MLP':
+                        #models.append(('Voting', VotingClassifier(list(models), voting="soft")))
+                        models.append(('Voting2', VotingClassifier(list(models[7:12]), voting="soft")))
+
+                    results.append([feature_set, model[0], tfscore, dfscore])
+
+    return results
+
+
+def train_MLP(training_file, development_file, counts, test=False):
+    twords, y_true_training = load_file(training_file)
+    if test:
+        dwords = load_test_file(development_file)
+    else:
+        dwords, y_true_development = load_file(development_file)
+
+    X_train, train_stats = features_train_custom(twords, counts)
+    X_dev = features_test_custom(dwords, counts, train_stats)
+
+    models = []
+    mlp = MLPClassifier()
+    parameter_space = {
+        'hidden_layer_sizes': [(50, 50, 50), (50, 100, 50), (100,)],
+        'activation': ['tanh', 'relu'],
+        'solver': ['sgd', 'adam'],
+        'alpha': [0.0001, 0.05],
+        'learning_rate': ['constant', 'adaptive'],
+    }
+    models.append(('MLP', GridSearchCV(mlp, parameter_space, n_jobs=-1, cv=5, refit='F1')))
+
+    for idx, model in enumerate(models):
+        model[1].fit(X_train, y_true_training)
+        y_pred_training = model[1].predict(X_train)
+        y_pred_development = model[1].predict(X_dev)
+        print(model[0])
+        print("=====Training=====")
+        tprecision, trecall, tfscore = test_predictions(y_pred_training, y_true_training)
+        if not test:
+            print("=====Development=====")
+            dprecision, drecall, dfscore = test_predictions(y_pred_development, y_true_development)
+
+        # Best parameter set
+        print('Best parameters found:\n', models[0][1].best_params_)
+
+        # All results
+        means = models[0][1].cv_results_['mean_test_score']
+        stds = models[0][1].cv_results_['std_test_score']
+        for mean, std, params in zip(means, stds, models[0][1].cv_results_['params']):
+            print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
+
+        return y_pred_development
+
+
 
 
 if __name__ == "__main__":
@@ -506,7 +625,10 @@ if __name__ == "__main__":
     # print(naive_bayes_results)
     # print(logistic_regression_results)
 
-    predictions = test_all_classifiers(training_file, test_file, counts, test=True)
+    predictions = test_all_classifiers(training_file, development_file, counts, test=False)
+    #predictions = test_all_classifiers_all_feature_sets(training_file, development_file, counts, test=False)
+    #predictions = test_all_classifiers(training_file, test_file, counts, test=True)
+    #predictions = train_MLP(training_file, development_file, counts, test=True)
     with open('test_labels.txt', 'a') as file:
         for pred in predictions:
             file.write(str(pred) + '\n')
