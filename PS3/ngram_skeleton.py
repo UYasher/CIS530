@@ -96,7 +96,7 @@ class NgramModel(object):
             n-grams learned by this model '''
         generated_text = ""
         while length > 0:
-            generated_text += self.random_char(generated_text)
+            generated_text += self.random_char(generated_text[-self.order:])
             length -= 1
 
     def perplexity(self, text):
@@ -165,7 +165,7 @@ def load_dataset(folder):
     for code in COUNTRY_CODES:
         with open("./" + folder + "/" + code + ".txt", "rb") as input_file:
             for city in input_file:
-                x.append(input_file)
+                x.append(city)
                 y.append(code)
     return x, y
 
@@ -175,11 +175,15 @@ class AllCountriesModel():
     def __init__(self):
         models = {}
         for code in COUNTRY_CODES:
-            models[code].append(create_ngram_model(NgramModel, "./train/" + code + ".txt"))
+            models[code] = (create_ngram_model(NgramModel, "./train/" + code + ".txt"))
         self.models = models
 
     def predict_country(self, city):
-        return max({ model.key:model.value(city) for model in self.models })
+        return max({
+            code: self.models[code].prob(start_pad(self.models[code].order), "a")
+            for code in COUNTRY_CODES
+        }
+        )
 
     def predict(self, cities):
         results = []
@@ -189,6 +193,31 @@ class AllCountriesModel():
         return results
 
 if __name__ == '__main__':
+    print("Loading Data...")
+    x_train, y_train = load_dataset("train")
+    x_dev, y_dev = load_dataset("val")
+
+    print("Training Model...")
+    model = AllCountriesModel()
+
+    print("Making Predictions...")
+    y_train_pred = model.predict(x_train)
+    y_dev_pred = model.predict_country(x_dev)
+
+    print("Tabulating Results...")
+    f1_train = f1_score(y_train, y_train_pred)
+    confusion_train = confusion_matrix(y_train, y_train_pred)
+
+    print("=====TRAINING=====")
+    print("f1: " + str(f1_train))
+    print(confusion_train)
+
+    f1_test = f1_score(y_dev, y_dev_pred)
+    confusion_test = confusion_matrix(y_dev, y_dev_pred)
+
+    print("=====DEVELOPMENT=====")
+    print("f1: " + str(f1_test))
+    print(confusion_test)
     m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
     m.random_text(250)
     # x_train, y_train = load_dataset("train")
