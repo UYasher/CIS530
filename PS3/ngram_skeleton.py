@@ -164,9 +164,9 @@ def load_dataset(folder):
     x = []
     y = []
     for code in COUNTRY_CODES:
-        with open("./" + folder + "/" + code + ".txt", "rb") as input_file:
+        with open("./" + folder + "/" + code + ".txt", encoding='utf-8', errors='ignore') as input_file:
             for city in input_file:
-                x.append(city)
+                x.append(city.strip())
                 y.append(code)
     return x, y
 
@@ -180,11 +180,20 @@ class AllCountriesModel():
         self.models = models
 
     def predict_country(self, city):
-        return max({
-            code: self.models[code].prob(start_pad(self.models[code].order), "a")
-            for code in COUNTRY_CODES
-        }
-        )
+        max_prob = 0
+        arg_max = ""
+        for code in COUNTRY_CODES:
+            order = self.models[code].order
+            padded_city = start_pad(order) + str(city)
+            probability = 1
+            for i in range(len(city)):
+                print(padded_city)
+                print(padded_city[i:i+order])
+                probability *= self.models[code].prob(padded_city[i:i+order], padded_city[i+order])
+            if probability > max_prob:
+                max_prob = probability
+                arg_max = code
+        return arg_max
 
     def predict(self, cities):
         results = []
@@ -202,6 +211,7 @@ if __name__ == '__main__':
     model = AllCountriesModel()
 
     print("Making Predictions...")
+    print(x_train)
     y_train_pred = model.predict(x_train)
     y_dev_pred = model.predict_country(x_dev)
 
