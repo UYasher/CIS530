@@ -174,7 +174,7 @@ class AllCountriesModel():
     def __init__(self):
         models = {}
         for code in COUNTRY_CODES:
-            models[code] = (create_ngram_model(NgramModel, "./train/" + code + ".txt"))
+            models[code] = (create_ngram_model(NgramModel, "./train/" + code + ".txt", k=1))
         self.models = models
 
     def predict_country(self, city):
@@ -185,8 +185,6 @@ class AllCountriesModel():
             padded_city = start_pad(order) + str(city)
             probability = 1
             for i in range(len(city)):
-                print(padded_city)
-                print(padded_city[i:i+order])
                 probability *= self.models[code].prob(padded_city[i:i+order], padded_city[i+order])
             if probability > max_prob:
                 max_prob = probability
@@ -201,7 +199,7 @@ class AllCountriesModel():
         return results
 
 if __name__ == '__main__':
-    '''
+
     print("Loading Data...")
     x_train, y_train = load_dataset("train")
     x_dev, y_dev = load_dataset("val")
@@ -210,7 +208,6 @@ if __name__ == '__main__':
     model = AllCountriesModel()
 
     print("Making Predictions...")
-    print(x_train)
     y_train_pred = model.predict(x_train)
     y_dev_pred = model.predict_country(x_dev)
 
@@ -228,6 +225,6 @@ if __name__ == '__main__':
     print("=====DEVELOPMENT=====")
     print("f1: " + str(f1_test))
     print(confusion_test)
-    '''
-    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
-    print(m.random_text(250))
+
+    # m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
+    # print(m.random_text(250))
