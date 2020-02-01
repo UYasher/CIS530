@@ -73,23 +73,20 @@ class NgramModel(object):
                 count_context += 1
                 if charac == char:
                     count_char += 1
-        if count_context == 0:
-            return ArithmeticError("Division by zero")
         return (count_char + 1) / (count_context + len(self.vocab))
 
     def random_char(self, context):
         ''' Returns a random character based on the given context and the 
             n-grams learned by this model '''
         r = random.random()
-        vocab = self.get_vocab().sort()
+        vocab = self.get_vocab()
+        vocab.sort()
         sum = 0
         for i in range(len(vocab)):
             sum += self.prob(context, vocab[i])
             if sum <= r:
                 return vocab[i]
-
         return vocab[-1]
-
 
     def random_text(self, length):
         ''' Returns text of the specified character length based on the
@@ -97,20 +94,22 @@ class NgramModel(object):
         generated_text = ""
         while length > 0:
             generated_text += self.random_char(generated_text[-self.order:])
+            print(generated_text)
             length -= 1
+        return generated_text
 
     def perplexity(self, text):
         ''' Returns the perplexity of text based on the n-grams learned by
             this model '''
-        text = start_pad(self.n) + text
+        text = start_pad(self.order) + text
 
         sum_logs = 0
-        for i in range(len(text)-self.n):
-            sum_logs += math.log(self.prob(text[i:i+self.n], text[i+self.n]), 2)
+        for i in range(len(text)-self.order):
+            sum_logs += math.log(self.prob(text[i:i+self.order], text[i+self.order]), 2)
 
-        l = 1/len(text) * sum_logs
+        out = 1/len(text) * sum_logs
 
-        return 2**-l
+        return 2**-out
 
 
 ################################################################################
@@ -193,40 +192,18 @@ class AllCountriesModel():
         return results
 
 if __name__ == '__main__':
-    print("Loading Data...")
-    x_train, y_train = load_dataset("train")
-    x_dev, y_dev = load_dataset("val")
-
-    print("Training Model...")
-    model = AllCountriesModel()
-
-    print("Making Predictions...")
-    y_train_pred = model.predict(x_train)
-    y_dev_pred = model.predict_country(x_dev)
-
-    print("Tabulating Results...")
-    f1_train = f1_score(y_train, y_train_pred)
-    confusion_train = confusion_matrix(y_train, y_train_pred)
-
-    print("=====TRAINING=====")
-    print("f1: " + str(f1_train))
-    print(confusion_train)
-
-    f1_test = f1_score(y_dev, y_dev_pred)
-    confusion_test = confusion_matrix(y_dev, y_dev_pred)
-
-    print("=====DEVELOPMENT=====")
-    print("f1: " + str(f1_test))
-    print(confusion_test)
-    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
-    m.random_text(250)
+    # print("Loading Data...")
     # x_train, y_train = load_dataset("train")
     # x_dev, y_dev = load_dataset("val")
     #
+    # print("Training Model...")
     # model = AllCountriesModel()
+    #
+    # print("Making Predictions...")
     # y_train_pred = model.predict(x_train)
     # y_dev_pred = model.predict_country(x_dev)
     #
+    # print("Tabulating Results...")
     # f1_train = f1_score(y_train, y_train_pred)
     # confusion_train = confusion_matrix(y_train, y_train_pred)
     #
@@ -240,3 +217,5 @@ if __name__ == '__main__':
     # print("=====DEVELOPMENT=====")
     # print("f1: " + str(f1_test))
     # print(confusion_test)
+    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
+    print(m.random_text(250))
