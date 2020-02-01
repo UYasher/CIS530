@@ -74,7 +74,7 @@ class NgramModel(object):
                     count_char += 1
         if count_context == 0:
             return ArithmeticError("Division by zero")
-        return count_char / count_context
+        return (count_char + 1) / (count_context + len(self.vocab))
 
     def random_char(self, context):
         ''' Returns a random character based on the given context and the 
@@ -121,15 +121,38 @@ class NgramModelWithInterpolation(NgramModel):
 
     def __init__(self, n, k):
         super(NgramModelWithInterpolation, self).__init__(n, k)
+        self.n_grams_all = []
+        for i in range(1, n + 1):
+            self.n_grams_all.append(NgramModel(i, k))
 
     def get_vocab(self):
-        return self.vocab
+        return self.n_grams_all[0].get_vocab()
 
     def update(self, text):
-        pass
+        for i in range(0, self.order):
+            self.n_grams_all[i].update(text)
 
     def prob(self, context, char):
-        pass
+        lambdas = self.set_lambdas()
+        output_prob = 0
+        for ii in range(len(lambdas)):
+            output_prob += lambdas(ii) * self.n_grams_all[ii].prob(context, char)
+        return output_prob
+
+    # Helper function for setting lambda values to be used in the interpolation
+    def set_lambdas(self, lambdas=None):
+        if lambdas is None:
+            lambdas = []
+            if self.order == 0:
+                return [1]
+            for ii in range(self.order):
+                lambdas.append(1 / self.order)
+        elif len(lambdas) != self.order:
+            return ValueError("Number of lambdas should be same as n")
+        elif sum(lambdas) != 1:
+            return ValueError("Sum of lambdas should equal to 1")
+        return lambdas
+
 
 ################################################################################
 # Part 3: Your N-Gram Model Experimentation
