@@ -140,7 +140,6 @@ def length_threshold_feature(words, threshold):
             length_threshold_array.append(1)
         else:
             length_threshold_array.append(0)
-
     return length_threshold_array
 
 ## Finds the best length threshold by f-score, and uses this threshold to
@@ -649,10 +648,7 @@ if __name__ == "__main__":
     # print(naive_bayes_results)
     # print(logistic_regression_results)
 
-    predictions = test_all_classifiers(training_file, development_file, counts, test=False)
-    #predictions = test_all_classifiers_all_feature_sets(training_file, development_file, counts, test=False)
-    #predictions = test_all_classifiers(training_file, test_file, counts, test=True)
-    #predictions = train_MLP(training_file, development_file, counts, test=True)
+    predictions = test_all_classifiers(training_file, test_file, counts, test=True)
     with open('test_labels.txt', 'a') as file:
         for pred in predictions:
             file.write(str(pred) + '\n')
