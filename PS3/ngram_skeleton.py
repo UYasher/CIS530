@@ -68,6 +68,7 @@ class NgramModel(object):
         ''' Returns the probability of char appearing after context '''
         count_context = 0
         count_char = 0
+        input(len(self.n_grams))
         for ctx, charac in self.n_grams:
             if ctx == context:
                 count_context += 1
@@ -83,8 +84,12 @@ class NgramModel(object):
         vocab.sort()
         sum = 0
         for i in range(len(vocab)):
+            # print("r: " + str(r))
+            # input("sum: " + str(sum))
             sum += self.prob(context, vocab[i])
-            if sum <= r:
+            sum += 0.1
+            if sum >= r:
+                print(vocab[i])
                 return vocab[i]
         return vocab[-1]
 
@@ -94,7 +99,7 @@ class NgramModel(object):
         generated_text = ""
         while length > 0:
             generated_text += self.random_char(generated_text[-self.order:])
-            print(generated_text)
+            # print(generated_text)
             length -= 1
         return generated_text
 
@@ -200,31 +205,31 @@ class AllCountriesModel():
 
 if __name__ == '__main__':
 
-    print("Loading Data...")
-    x_train, y_train = load_dataset("train")
-    x_dev, y_dev = load_dataset("val")
+    # print("Loading Data...")
+    # x_train, y_train = load_dataset("train")
+    # x_dev, y_dev = load_dataset("val")
+    #
+    # print("Training Model...")
+    # model = AllCountriesModel()
+    #
+    # print("Making Predictions...")
+    # y_train_pred = model.predict(x_train)
+    # y_dev_pred = model.predict_country(x_dev)
+    #
+    # print("Tabulating Results...")
+    # f1_train = f1_score(y_train, y_train_pred)
+    # confusion_train = confusion_matrix(y_train, y_train_pred)
+    #
+    # print("=====TRAINING=====")
+    # print("f1: " + str(f1_train))
+    # print(confusion_train)
+    #
+    # f1_test = f1_score(y_dev, y_dev_pred)
+    # confusion_test = confusion_matrix(y_dev, y_dev_pred)
+    #
+    # print("=====DEVELOPMENT=====")
+    # print("f1: " + str(f1_test))
+    # print(confusion_test)
 
-    print("Training Model...")
-    model = AllCountriesModel()
-
-    print("Making Predictions...")
-    y_train_pred = model.predict(x_train)
-    y_dev_pred = model.predict_country(x_dev)
-
-    print("Tabulating Results...")
-    f1_train = f1_score(y_train, y_train_pred)
-    confusion_train = confusion_matrix(y_train, y_train_pred)
-
-    print("=====TRAINING=====")
-    print("f1: " + str(f1_train))
-    print(confusion_train)
-
-    f1_test = f1_score(y_dev, y_dev_pred)
-    confusion_test = confusion_matrix(y_dev, y_dev_pred)
-
-    print("=====DEVELOPMENT=====")
-    print("f1: " + str(f1_test))
-    print(confusion_test)
-
-    # m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
-    # print(m.random_text(250))
+    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
+    print(m.random_text(250))
