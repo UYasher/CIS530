@@ -121,10 +121,10 @@ class NgramModelWithInterpolation(NgramModel):
     ''' An n-gram model with interpolation '''
 
     def __init__(self, n, k):
-        pass
+        super(NgramModelWithInterpolation, self).__init__(n, k)
 
     def get_vocab(self):
-        pass
+        return self.vocab
 
     def update(self, text):
         pass
