@@ -176,10 +176,10 @@ def load_dataset(folder):
 
 class AllCountriesModel():
 
-    def __init__(self):
+    def __init__(self, n, k):
         models = {}
         for code in COUNTRY_CODES:
-            models[code] = (create_ngram_model(NgramModel, "./train/" + code + ".txt"))
+            models[code] = (create_ngram_model(NgramModel, "./train/" + code + ".txt", n=n, k=k))
         self.models = models
 
     def predict_country(self, city):
@@ -196,7 +196,7 @@ class AllCountriesModel():
                 arg_max = code
         return arg_max
 
-    def predict(self, cities):
+    def fit(self, cities):
         results = []
         for i in range(len(cities)):
             results.append(self.predict_country(cities[i]))
@@ -205,31 +205,45 @@ class AllCountriesModel():
 
 if __name__ == '__main__':
 
-    # print("Loading Data...")
-    # x_train, y_train = load_dataset("train")
-    # x_dev, y_dev = load_dataset("val")
-    #
-    # print("Training Model...")
-    # model = AllCountriesModel()
-    #
-    # print("Making Predictions...")
-    # y_train_pred = model.predict(x_train)
-    # y_dev_pred = model.predict_country(x_dev)
-    #
-    # print("Tabulating Results...")
-    # f1_train = f1_score(y_train, y_train_pred)
-    # confusion_train = confusion_matrix(y_train, y_train_pred)
-    #
-    # print("=====TRAINING=====")
-    # print("f1: " + str(f1_train))
-    # print(confusion_train)
-    #
-    # f1_test = f1_score(y_dev, y_dev_pred)
-    # confusion_test = confusion_matrix(y_dev, y_dev_pred)
-    #
-    # print("=====DEVELOPMENT=====")
-    # print("f1: " + str(f1_test))
-    # print(confusion_test)
+    print("Loading Data...")
+    x_train, y_train = load_dataset("train")
+    x_dev, y_dev = load_dataset("val")
 
-    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
-    print(m.random_text(250))
+    print("Training Model...")
+    model = AllCountriesModel(n=1, k=8)
+
+    print("Making Predictions...")
+    y_train_pred = model.fit(x_train)
+    y_dev_pred = model.fit(x_dev)
+
+    print("Tabulating Results...")
+    f1_train = f1_score(y_train, y_train_pred, average="micro")
+    confusion_train = confusion_matrix(y_train, y_train_pred)
+
+    print("=====TRAINING=====")
+    print("f1: " + str(f1_train))
+    print(confusion_train)
+
+    f1_test = f1_score(y_dev, y_dev_pred, average="micro")
+    confusion_test = confusion_matrix(y_dev, y_dev_pred)
+
+    print("=====DEVELOPMENT=====")
+    print("f1: " + str(f1_test))
+    print(confusion_test)
+
+    # m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
+    # print(m.random_text(250))
+
+    x_test = []
+    with open("cities_test.txt", encoding='utf-8', errors='ignore') as input_file:
+        for line in input_file:
+            x_test.append(line.strip())
+
+    y_test_pred = model.fit(x_test)
+
+    with open("test_labels.txt", "w") as output_file:
+        for line in y_test_pred:
+            output_file.write(line+"\n")
+
+    print()
+    print("Test set predictions can be found in test_labels.txt")
