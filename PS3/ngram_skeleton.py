@@ -96,7 +96,7 @@ class NgramModel(object):
             n-grams learned by this model '''
         generated_text = ""
         while length > 0:
-            generated_text += self.random_char(generated_text)
+            generated_text += self.random_char(generated_text[-self.order:])
             length -= 1
 
     def perplexity(self, text):
@@ -180,7 +180,11 @@ class AllCountriesModel():
         self.models = models
 
     def predict_country(self, city):
-        return max({ code:self.models[code](city) for code in COUNTRY_CODES })
+        return max({
+            code: self.models[code].prob(start_pad(self.models[code].order), "a")
+            for code in COUNTRY_CODES
+        }
+        )
 
     def predict(self, cities):
         results = []
@@ -190,13 +194,18 @@ class AllCountriesModel():
         return results
 
 if __name__ == '__main__':
+    print("Loading Data...")
     x_train, y_train = load_dataset("train")
     x_dev, y_dev = load_dataset("val")
 
+    print("Training Model...")
     model = AllCountriesModel()
+
+    print("Making Predictions...")
     y_train_pred = model.predict(x_train)
     y_dev_pred = model.predict_country(x_dev)
 
+    print("Tabulating Results...")
     f1_train = f1_score(y_train, y_train_pred)
     confusion_train = confusion_matrix(y_train, y_train_pred)
 
