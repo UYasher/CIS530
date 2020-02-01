@@ -22,7 +22,6 @@ from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, VotingClassifier
 from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier, XGBRFClassifier
-from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 from itertools import combinations
 
@@ -390,7 +389,7 @@ def frequency_features(words, counts):
     return frequencies
 
 
-# Computes number of vowels within each word
+# Computes ratio of vowels within each word
 def vowel_features(words):
     vowels = []
     vowel_list = ['a', 'e', 'i', 'o', 'u']
@@ -440,6 +439,35 @@ def mode_count(words):
         maxchar = max(set(word), key=word.count)
         mode_outputs[idx] += word.count(maxchar) - 1
     return mode_outputs
+
+
+# Prints examples of TP/TN/FP/FN words in the training data
+def error_analysis(words, y_pred, y_true):
+    cnt_tp, cnt_tn, cnt_fp, cnt_fn = 0, 0, 0, 0
+    words_tp, words_tn, words_fp, words_fn = [], [], [], []
+    for idx, word in enumerate(words):
+        if y_true[idx] == 1:
+            if y_pred[idx] == 1:
+                if cnt_tp < 10:
+                    words_tp.append(word)
+                cnt_tp += 1
+            else:
+                if cnt_fn < 10:
+                    words_fn.append(word)
+                cnt_fn += 1
+        else:
+            if y_pred[idx] == 1:
+                if cnt_fp < 10:
+                    words_fp.append(word)
+                cnt_fp += 1
+            else:
+                if cnt_tn < 10:
+                    words_tn.append(word)
+                cnt_tn += 1
+    print("True Positive: ", words_tp)
+    print("True Negative: ", words_tn)
+    print("False Positive: ", words_fp)
+    print("False Negative: ", words_fn)
 
 
 ## Trains a classifier of your choosing, predicts labels for the test dataset
@@ -604,14 +632,10 @@ def train_MLP(training_file, development_file, counts, test=False):
         return y_pred_development
 
 
-
-
 if __name__ == "__main__":
     training_file = "data/complex_words_training.txt"
     development_file = "data/complex_words_development.txt"
     test_file = "data/complex_words_test_unlabeled.txt"
-
-    train_data = load_file(training_file)
     
     ngram_counts_file = "ngram_counts.txt.gz"
     counts = load_ngram_counts(ngram_counts_file)
