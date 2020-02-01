@@ -63,17 +63,38 @@ class NgramModel(object):
     def random_char(self, context):
         ''' Returns a random character based on the given context and the 
             n-grams learned by this model '''
-        pass
+        r = random.random()
+        vocab = self.get_vocab().sort()
+        sum = 0
+        for i in range(len(vocab)):
+            sum += self.prob(context, vocab[i])
+            if sum <= r:
+                return vocab[i]
+
+        return vocab[-1]
+
 
     def random_text(self, length):
         ''' Returns text of the specified character length based on the
             n-grams learned by this model '''
-        pass
+        generated_text = ""
+        while length > 0:
+            generated_text += self.random_char(generated_text)
+            length -= 1
 
     def perplexity(self, text):
         ''' Returns the perplexity of text based on the n-grams learned by
             this model '''
-        pass
+        text = start_pad(self.n) + text
+
+        sum_logs = 0
+        for i in range(len(text)-self.n):
+            sum_logs += math.log(self.prob(text[i:i+self.n], text[i+self.n]), 2)
+
+        l = 1/len(text) * sum_logs
+
+        return 2**-l
+
 
 ################################################################################
 # Part 2: N-Gram Model with Interpolation
