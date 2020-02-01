@@ -79,7 +79,7 @@ class NgramModel(object):
             count_context = self.n_grams[context]['sum']
             if char in self.n_grams[context]:
                 count_char = self.n_grams[context][char]
-        return (count_char + 1) / (count_context + len(self.vocab))
+        return (count_char + self.smoothing) / (count_context + self.smoothing * len(self.vocab))
 
     def random_char(self, context):
         ''' Returns a random character based on the given context and the 
@@ -97,11 +97,11 @@ class NgramModel(object):
     def random_text(self, length):
         ''' Returns text of the specified character length based on the
             n-grams learned by this model '''
-        generated_text = ""
+        generated_text = start_pad(self.order)
         while length > 0:
             generated_text += self.random_char(generated_text[-self.order:])
             length -= 1
-        return generated_text
+        return generated_text[self.order::]
 
     def perplexity(self, text):
         ''' Returns the perplexity of text based on the n-grams learned by
@@ -234,5 +234,5 @@ if __name__ == '__main__':
     print("f1: " + str(f1_test))
     print(confusion_test)
     '''
-    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=7)
+    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=7, k=0)
     print(m.random_text(250))
