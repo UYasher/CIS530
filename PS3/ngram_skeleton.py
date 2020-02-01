@@ -18,7 +18,6 @@ def ngrams(n, text):
     ngram_list = []
     for i in range(len(text)-n):
         ngram_list.append((text[i:i+n], text[i+n]))
-
     return ngram_list
 
 def create_ngram_model(model_class, path, n=2, k=0):
@@ -46,19 +45,36 @@ class NgramModel(object):
     ''' A basic n-gram model using add-k smoothing '''
 
     def __init__(self, n, k):
+        self.order = n
+        self.smoothing = k
+        self.n_grams = ngrams(n, '')
+        self.vocab = set()
         pass
 
     def get_vocab(self):
         ''' Returns the set of characters in the vocab '''
-        pass
+        return self.vocab
 
     def update(self, text):
         ''' Updates the model n-grams based on text '''
-        pass
+        new_grams = ngrams(self.order, text)
+        for context, charac in new_grams:
+            self.n_grams.append((context, charac))
+            if charac not in self.vocab:
+                self.vocab.add(charac)
 
     def prob(self, context, char):
         ''' Returns the probability of char appearing after context '''
-        pass
+        count_context = 0
+        count_char = 0
+        for ctx, charac in self.n_grams:
+            if ctx == context:
+                count_context += 1
+                if charac == char:
+                    count_char += 1
+        if count_context == 0:
+            return ArithmeticError("Division by zero")
+        return count_char / count_context
 
     def random_char(self, context):
         ''' Returns a random character based on the given context and the 
