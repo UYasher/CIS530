@@ -79,6 +79,8 @@ class NgramModel(object):
             count_context = self.n_grams[context]['sum']
             if char in self.n_grams[context]:
                 count_char = self.n_grams[context][char]
+        if count_context == 0:
+            return 1 / len(self.vocab)
         return (count_char + self.smoothing) / (count_context + self.smoothing * len(self.vocab))
 
     def random_char(self, context):
@@ -127,21 +129,22 @@ class NgramModelWithInterpolation(NgramModel):
     def __init__(self, n, k):
         super(NgramModelWithInterpolation, self).__init__(n, k)
         self.n_grams_all = []
-        for i in range(1, n + 1):
+        for i in range(0, n + 1):
             self.n_grams_all.append(NgramModel(i, k))
 
     def get_vocab(self):
-        return self.n_grams_all[0].get_vocab()
+        return self.n_grams_all[-1].get_vocab()
 
     def update(self, text):
-        for i in range(0, self.order):
+        for i in range(0, self.order + 1):
             self.n_grams_all[i].update(text)
 
     def prob(self, context, char):
         lambdas = self.set_lambdas()
         output_prob = 0
         for ii in range(len(lambdas)):
-            output_prob += lambdas(ii) * self.n_grams_all[ii].prob(context, char)
+            level_context = context[-ii:] if ii > 0 else ''
+            output_prob += lambdas[ii] * self.n_grams_all[ii].prob(level_context, char)
         return output_prob
 
     # Helper function for setting lambda values to be used in the interpolation
@@ -150,8 +153,8 @@ class NgramModelWithInterpolation(NgramModel):
             lambdas = []
             if self.order == 0:
                 return [1]
-            for ii in range(self.order):
-                lambdas.append(1 / self.order)
+            for ii in range(self.order + 1):
+                lambdas.append(1 / (self.order + 1))
         elif len(lambdas) != self.order:
             return ValueError("Number of lambdas should be same as n")
         elif sum(lambdas) != 1:
@@ -231,5 +234,6 @@ if __name__ == '__main__':
     # print("f1: " + str(f1_test))
     # print(confusion_test)
 
-    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
+    m = create_ngram_model(NgramModelWithInterpolation, 'shakespeare_input.txt', n=7, k=0)
     print(m.random_text(250))
+
