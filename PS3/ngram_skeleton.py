@@ -136,13 +136,14 @@ class NgramModelWithInterpolation(NgramModel):
 # Part 3: Your N-Gram Model Experimentation
 ################################################################################
 
+
 def load_dataset(folder):
     x = []
     y = []
     for code in COUNTRY_CODES:
-        with open("./" + folder + "/" + code + ".txt", "r") as input_file:
+        with open("./" + folder + "/" + code + ".txt", "rb") as input_file:
             for city in input_file:
-                x.append(input_file)
+                x.append(city)
                 y.append(code)
     return x, y
 
@@ -152,11 +153,11 @@ class AllCountriesModel():
     def __init__(self):
         models = {}
         for code in COUNTRY_CODES:
-            models[code].append(create_ngram_model(NgramModel, "./train/" + code + ".txt"))
+            models[code] = (create_ngram_model(NgramModel, "./train/" + code + ".txt"))
         self.models = models
 
     def predict_country(self, city):
-        return max({ model.key:model.value(city) for model in self.models })
+        return max({ code:self.models[code](city) for code in COUNTRY_CODES })
 
     def predict(self, cities):
         results = []
