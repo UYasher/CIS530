@@ -190,8 +190,6 @@ class AllCountriesModel():
             padded_city = start_pad(order) + str(city)
             probability = 1
             for i in range(len(city)):
-                print(padded_city)
-                print(padded_city[i:i+order])
                 probability *= self.models[code].prob(padded_city[i:i+order], padded_city[i+order])
             if probability > max_prob:
                 max_prob = probability
@@ -206,33 +204,32 @@ class AllCountriesModel():
         return results
 
 if __name__ == '__main__':
-    '''
-    print("Loading Data...")
-    x_train, y_train = load_dataset("train")
-    x_dev, y_dev = load_dataset("val")
 
-    print("Training Model...")
-    model = AllCountriesModel()
+    # print("Loading Data...")
+    # x_train, y_train = load_dataset("train")
+    # x_dev, y_dev = load_dataset("val")
+    #
+    # print("Training Model...")
+    # model = AllCountriesModel()
+    #
+    # print("Making Predictions...")
+    # y_train_pred = model.predict(x_train)
+    # y_dev_pred = model.predict_country(x_dev)
+    #
+    # print("Tabulating Results...")
+    # f1_train = f1_score(y_train, y_train_pred)
+    # confusion_train = confusion_matrix(y_train, y_train_pred)
+    #
+    # print("=====TRAINING=====")
+    # print("f1: " + str(f1_train))
+    # print(confusion_train)
+    #
+    # f1_test = f1_score(y_dev, y_dev_pred)
+    # confusion_test = confusion_matrix(y_dev, y_dev_pred)
+    #
+    # print("=====DEVELOPMENT=====")
+    # print("f1: " + str(f1_test))
+    # print(confusion_test)
 
-    print("Making Predictions...")
-    print(x_train)
-    y_train_pred = model.predict(x_train)
-    y_dev_pred = model.predict_country(x_dev)
-
-    print("Tabulating Results...")
-    f1_train = f1_score(y_train, y_train_pred)
-    confusion_train = confusion_matrix(y_train, y_train_pred)
-
-    print("=====TRAINING=====")
-    print("f1: " + str(f1_train))
-    print(confusion_train)
-
-    f1_test = f1_score(y_dev, y_dev_pred)
-    confusion_test = confusion_matrix(y_dev, y_dev_pred)
-
-    print("=====DEVELOPMENT=====")
-    print("f1: " + str(f1_test))
-    print(confusion_test)
-    '''
-    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=7, k=0)
+    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
     print(m.random_text(250))
