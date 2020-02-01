@@ -49,7 +49,7 @@ class NgramModel(object):
         self.order = n
         self.smoothing = k
         self.n_grams = ngrams(n, '')
-        self.vocab = set()
+        self.vocab = list()
         pass
 
     def get_vocab(self):
@@ -62,7 +62,7 @@ class NgramModel(object):
         for context, charac in new_grams:
             self.n_grams.append((context, charac))
             if charac not in self.vocab:
-                self.vocab.add(charac)
+                self.vocab.append(charac)
 
     def prob(self, context, char):
         ''' Returns the probability of char appearing after context '''
@@ -163,7 +163,7 @@ def load_dataset(folder):
     x = []
     y = []
     for code in COUNTRY_CODES:
-        with open("./" + folder + "/" + code + ".txt", "r") as input_file:
+        with open("./" + folder + "/" + code + ".txt", "rb") as input_file:
             for city in input_file:
                 x.append(input_file)
                 y.append(code)
@@ -189,23 +189,25 @@ class AllCountriesModel():
         return results
 
 if __name__ == '__main__':
-    x_train, y_train = load_dataset("train")
-    x_dev, y_dev = load_dataset("val")
-
-    model = AllCountriesModel()
-    y_train_pred = model.predict(x_train)
-    y_dev_pred = model.predict_country(x_dev)
-
-    f1_train = f1_score(y_train, y_train_pred)
-    confusion_train = confusion_matrix(y_train, y_train_pred)
-
-    print("=====TRAINING=====")
-    print("f1: " + str(f1_train))
-    print(confusion_train)
-
-    f1_test = f1_score(y_dev, y_dev_pred)
-    confusion_test = confusion_matrix(y_dev, y_dev_pred)
-
-    print("=====DEVELOPMENT=====")
-    print("f1: " + str(f1_test))
-    print(confusion_test)
+    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
+    m.random_text(250)
+    # x_train, y_train = load_dataset("train")
+    # x_dev, y_dev = load_dataset("val")
+    #
+    # model = AllCountriesModel()
+    # y_train_pred = model.predict(x_train)
+    # y_dev_pred = model.predict_country(x_dev)
+    #
+    # f1_train = f1_score(y_train, y_train_pred)
+    # confusion_train = confusion_matrix(y_train, y_train_pred)
+    #
+    # print("=====TRAINING=====")
+    # print("f1: " + str(f1_train))
+    # print(confusion_train)
+    #
+    # f1_test = f1_score(y_dev, y_dev_pred)
+    # confusion_test = confusion_matrix(y_dev, y_dev_pred)
+    #
+    # print("=====DEVELOPMENT=====")
+    # print("f1: " + str(f1_test))
+    # print(confusion_test)
