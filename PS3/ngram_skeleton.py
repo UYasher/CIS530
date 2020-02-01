@@ -48,7 +48,7 @@ class NgramModel(object):
     def __init__(self, n, k):
         self.order = n
         self.smoothing = k
-        self.n_grams = ngrams(n, '')
+        self.n_grams = dict()
         self.vocab = list()
         pass
 
@@ -60,7 +60,14 @@ class NgramModel(object):
         ''' Updates the model n-grams based on text '''
         new_grams = ngrams(self.order, text)
         for context, charac in new_grams:
-            self.n_grams.append((context, charac))
+            if context in self.n_grams:
+                if charac in self.n_grams[context]:
+                    self.n_grams[context][charac] += 1
+                else:
+                    self.n_grams[context][charac] = 1
+                self.n_grams[context]['sum'] += 1
+            else:
+                self.n_grams[context] = {charac: 1, 'sum': 1}
             if charac not in self.vocab:
                 self.vocab.append(charac)
 
@@ -68,11 +75,10 @@ class NgramModel(object):
         ''' Returns the probability of char appearing after context '''
         count_context = 0
         count_char = 0
-        for ctx, charac in self.n_grams:
-            if ctx == context:
-                count_context += 1
-                if charac == char:
-                    count_char += 1
+        if context in self.n_grams:
+            count_context = self.n_grams[context]['sum']
+            if char in self.n_grams[context]:
+                count_char = self.n_grams[context][char]
         return (count_char + 1) / (count_context + len(self.vocab))
 
     def random_char(self, context):
@@ -84,7 +90,7 @@ class NgramModel(object):
         sum = 0
         for i in range(len(vocab)):
             sum += self.prob(context, vocab[i])
-            if sum <= r:
+            if sum > r:
                 return vocab[i]
         return vocab[-1]
 
@@ -94,7 +100,6 @@ class NgramModel(object):
         generated_text = ""
         while length > 0:
             generated_text += self.random_char(generated_text[-self.order:])
-            print(generated_text)
             length -= 1
         return generated_text
 
@@ -229,5 +234,5 @@ if __name__ == '__main__':
     print("f1: " + str(f1_test))
     print(confusion_test)
     '''
-    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
+    m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=7)
     print(m.random_text(250))
