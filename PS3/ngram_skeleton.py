@@ -1,5 +1,4 @@
 import math, random
-from sklearn.metrics import f1_score, confusion_matrix
 
 ################################################################################
 # Part 0: Utility Functions
@@ -21,7 +20,7 @@ def ngrams(n, text):
         ngram_list.append((text[i:i+n], text[i+n]))
     return ngram_list
 
-def create_ngram_model(model_class, path, n=2, k=0):
+def create_ngram_model(model_class, path, n=2, k=0.0):
     ''' Creates and returns a new n-gram model trained on the city names
         found in the path file '''
     model = model_class(n, k)
@@ -29,7 +28,7 @@ def create_ngram_model(model_class, path, n=2, k=0):
         model.update(f.read())
     return model
 
-def create_ngram_model_lines(model_class, path, n=2, k=0):
+def create_ngram_model_lines(model_class, path, n=2, k=0.0):
     ''' Creates and returns a new n-gram model trained on the city names
         found in the path file '''
     model = model_class(n, k)
@@ -54,7 +53,7 @@ class NgramModel(object):
 
     def get_vocab(self):
         ''' Returns the set of characters in the vocab '''
-        return self.vocab
+        return set(self.vocab)
 
     def update(self, text):
         ''' Updates the model n-grams based on text '''
@@ -87,7 +86,7 @@ class NgramModel(object):
         ''' Returns a random character based on the given context and the 
             n-grams learned by this model '''
         r = random.random()
-        vocab = self.get_vocab()
+        vocab = self.vocab
         vocab.sort()
         sum = 0
         for i in range(len(vocab)):
@@ -112,9 +111,12 @@ class NgramModel(object):
 
         sum_logs = 0
         for i in range(len(text)-self.order):
-            sum_logs += math.log(self.prob(text[i:i+self.order], text[i+self.order]), 2)
+            curr_prob = self.prob(text[i:i+self.order], text[i+self.order])
+            if curr_prob == 0:
+                return float('inf')
+            sum_logs += math.log(curr_prob, 2)
 
-        out = 1/len(text) * sum_logs
+        out = 1/(len(text) - self.order) * sum_logs
 
         return 2**-out
 
@@ -133,7 +135,7 @@ class NgramModelWithInterpolation(NgramModel):
             self.n_grams_all.append(NgramModel(i, k))
 
     def get_vocab(self):
-        return self.n_grams_all[-1].get_vocab()
+        return set(self.n_grams_all[-1].get_vocab())
 
     def update(self, text):
         for i in range(0, self.order + 1):
@@ -208,7 +210,7 @@ class AllCountriesModel():
 
 if __name__ == '__main__':
 
-    # print("Loading Data...")
+    print("Loading Data...")
     # x_train, y_train = load_dataset("train")
     # x_dev, y_dev = load_dataset("val")
     #
@@ -233,7 +235,10 @@ if __name__ == '__main__':
     # print("=====DEVELOPMENT=====")
     # print("f1: " + str(f1_test))
     # print(confusion_test)
-
-    m = create_ngram_model(NgramModelWithInterpolation, 'shakespeare_input.txt', n=7, k=0)
-    print(m.random_text(250))
-
+    path = 'shakespeare_input.txt'
+    model = create_ngram_model(NgramModel, path, n=2, k=0.1)
+    test_path = 'shakespeare_lines_processed.txt'
+    with open(test_path, encoding='utf-8', errors='ignore') as f:
+        test_string = f.read()
+    perp = model.perplexity(test_string)
+    print("Perplexity: ", perp)
