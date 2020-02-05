@@ -1,5 +1,8 @@
 import math, random
-from sklearn.metrics import f1_score, confusion_matrix
+from sklearn.metrics import f1_score, confusion_matrix, plot_confusion_matrix
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 ################################################################################
 # Part 0: Utility Functions
@@ -179,7 +182,8 @@ class AllCountriesModel():
     def __init__(self, n, k):
         models = {}
         for code in COUNTRY_CODES:
-            models[code] = (create_ngram_model(NgramModel, "./train/" + code + ".txt", n=n, k=k))
+            # models[code] = (create_ngram_model(NgramModel, "./train/" + code + ".txt", n=n, k=k))
+            models[code] = (create_ngram_model(NgramModelWithInterpolation, "./train/" + code + ".txt", n=n, k=k))
         self.models = models
 
     def predict_country(self, city):
@@ -196,6 +200,10 @@ class AllCountriesModel():
                 arg_max = code
         return arg_max
 
+    def set_lambdas(self, lambdas):
+        for code in self.models:
+            print(self.models[code].set_lambdas(lambdas)
+
     def fit(self, cities):
         results = []
         for i in range(len(cities)):
@@ -203,36 +211,80 @@ class AllCountriesModel():
 
         return results
 
+
+
+
 if __name__ == '__main__':
+
+    # fscores = np.array(
+    #     [[0, 0.4933333333333334, 0.4933333333333334, 0.4922222222222222, 0.4922222222222222, 0.4911111111111111, 0.49,
+    #       0.49, 0.4911111111111111, 0.4888888888888889],
+    #      [0, 0.6333333333333333, 0.6366666666666667, 0.6377777777777778, 0.6388888888888888, 0.64, 0.6422222222222222,
+    #       0.6455555555555555, 0.6488888888888888, 0.6466666666666666],
+    #      [0, 0.6311111111111111, 0.6344444444444445, 0.6311111111111111, 0.6355555555555555, 0.63, 0.6255555555555555,
+    #       0.62, 0.6088888888888889, 0.6022222222222222],
+    #      [0, 0.5844444444444444, 0.5566666666666666, 0.5188888888888888, 0.4955555555555556, 0.4677777777777778,
+    #       0.4444444444444444, 0.4211111111111111, 0.40444444444444444, 0.39111111111111113],
+    #      [0, 0.4177777777777778, 0.3522222222222222, 0.3188888888888889, 0.29333333333333333, 0.27555555555555555, 0.26,
+    #       0.2411111111111111, 0.21666666666666667, 0.20555555555555555],
+    #      [0, 0.27555555555555555, 0.21666666666666667, 0.19, 0.17888888888888888, 0.16444444444444445,
+    #       0.15555555555555556, 0.14777777777777779, 0.14333333333333334, 0.14],
+    #      [0, 0.18333333333333332, 0.15888888888888889, 0.1411111111111111, 0.13555555555555557, 0.13111111111111112,
+    #       0.12666666666666668, 0.12444444444444444, 0.12333333333333335, 0.12]]
+    # )
+    #
+    # plt.imshow(fscores, cmap='YlGnBu', interpolation='nearest', vmin=0, vmax=1, )
+    # plt.colorbar()
+    # plt.ylabel("n")
+    # plt.xlabel("k")
+    # plt.title("F-Scores")
+    # plt.show()
 
     print("Loading Data...")
     x_train, y_train = load_dataset("train")
     x_dev, y_dev = load_dataset("val")
 
+
     print("Training Model...")
-    model = AllCountriesModel(n=1, k=8)
+    n = 1
+    k = 8
+    lambdas_list = [
+        [1, 0],
+        [0, 1]
+    ]
 
-    print("Making Predictions...")
-    y_train_pred = model.fit(x_train)
-    y_dev_pred = model.fit(x_dev)
+    model = AllCountriesModel(n=n, k=k)
 
-    print("Tabulating Results...")
-    f1_train = f1_score(y_train, y_train_pred, average="micro")
-    confusion_train = confusion_matrix(y_train, y_train_pred)
+    for lambdas in lambdas_list:
+        print(lambdas)
 
-    print("=====TRAINING=====")
-    print("f1: " + str(f1_train))
-    print(confusion_train)
+        model.set_lambdas(lambdas)
 
-    f1_test = f1_score(y_dev, y_dev_pred, average="micro")
-    confusion_test = confusion_matrix(y_dev, y_dev_pred)
+        # print("Making Predictions...")
+        y_train_pred = model.fit(x_train)
+        y_dev_pred = model.fit(x_dev)
 
-    print("=====DEVELOPMENT=====")
-    print("f1: " + str(f1_test))
-    print(confusion_test)
+        # print("Tabulating Results...")
+        f1_train = f1_score(y_train, y_train_pred, average="micro")
+        confusion_train = confusion_matrix(y_train, y_train_pred)
+
+        print("=====TRAINING=====")
+        print("f1: " + str(f1_train))
+        print(confusion_train)
+
+        f1_dev = f1_score(y_dev, y_dev_pred, average="micro")
+        confusion_dev = confusion_matrix(y_dev, y_dev_pred)
+
+        print("=====DEVELOPMENT=====")
+        print("f1: " + str(f1_dev))
+        print(confusion_dev)
+
+    # n_k_arr[n].append(f1_dev)
 
     # m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
     # print(m.random_text(250))
+    # print(n_k_arr)
+    # print(max(map(max, n_k_arr)))
 
     x_test = []
     with open("cities_test.txt", encoding='utf-8', errors='ignore') as input_file:
