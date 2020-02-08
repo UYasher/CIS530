@@ -224,10 +224,9 @@ def rank_plays(target_play_index, term_document_matrix, similarity_fn):
       ordered by decreasing similarity to the play indexed by target_play_index
     '''
 
-    target_play_vector = term_document_matrix[:, target_play_index] # might need different axis
-    target_similarity = lambda x: similarity_fn(target_play_vector, x)
-
-    return np.argsort(np.apply_along_axis(target_similarity, 0, term_document_matrix)) # Might need different axis
+    target_play_vector = term_document_matrix[:, target_play_index]  # might need different axis
+    target_similarity = lambda x: -1 * similarity_fn(target_play_vector, x)
+    return np.argsort(np.apply_along_axis(target_similarity, 0, term_document_matrix))  # Might need different axis
 
 
 def rank_words(target_word_index, matrix, similarity_fn):
@@ -248,7 +247,7 @@ def rank_words(target_word_index, matrix, similarity_fn):
     '''
 
     target_play_vector = matrix[target_word_index, :]  # might need different axis
-    target_similarity = lambda x: similarity_fn(target_play_vector, x)
+    target_similarity = lambda x: -1 * similarity_fn(target_play_vector, x)
 
     return np.argsort(np.apply_along_axis(target_similarity, 1, matrix))
 
@@ -268,7 +267,8 @@ if __name__ == '__main__':
     print('Computing PPMI matrix...')
     PPMI_matrix = create_PPMI_matrix(tc_matrix)
 
-    random_idx = random.randint(0, len(document_names) - 1)
+    random_idx = 1
+    # random_idx = random.randint(0, len(document_names) - 1)
     similarity_fns = [compute_cosine_similarity, compute_jaccard_similarity, compute_dice_similarity]
     for sim_fn in similarity_fns:
         print('\nThe 10 most similar plays to "%s" using %s are:' % (document_names[random_idx], sim_fn.__qualname__))
@@ -277,7 +277,7 @@ if __name__ == '__main__':
             doc_id = ranks[idx]
             print('%d: %s' % (idx + 1, document_names[doc_id]))
 
-    word = 'juliet'
+    word = 'death'
     vocab_to_index = dict(zip(vocab, range(0, len(vocab))))
     for sim_fn in similarity_fns:
         print('\nThe 10 most similar words to "%s" using %s on term-context frequency matrix are:' % (
@@ -287,7 +287,7 @@ if __name__ == '__main__':
             word_id = ranks[idx]
             print('%d: %s' % (idx + 1, vocab[word_id]))
 
-    word = 'juliet'
+    word = 'death'
     vocab_to_index = dict(zip(vocab, range(0, len(vocab))))
     for sim_fn in similarity_fns:
         print('\nThe 10 most similar words to "%s" using %s on PPMI matrix are:' % (word, sim_fn.__qualname__))
