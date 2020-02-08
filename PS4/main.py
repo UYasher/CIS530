@@ -7,7 +7,7 @@ import numpy as np
 
 
 def read_in_shakespeare():
-  '''Reads in the Shakespeare dataset processesit into a list of tuples.
+  '''Reads in the Shakespeare dataset processes it into a list of tuples.
      Also reads in the vocab and play name lists from files.
 
   Each tuple consists of
@@ -142,9 +142,8 @@ def compute_cosine_similarity(vector1, vector2):
   Returns:
     A scalar similarity value.
   '''
-  
-  # YOUR CODE HERE
-  return -1
+
+  return np.dot(vector1, vector2)/(np.linalg.norm(vector1) * np.linalg.norm(vector1))
 
 def compute_jaccard_similarity(vector1, vector2):
   '''Computes the cosine similarity of the two input vectors.
