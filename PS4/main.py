@@ -155,9 +155,8 @@ def compute_jaccard_similarity(vector1, vector2):
   Returns:
     A scalar similarity value.
   '''
-  
-  # YOUR CODE HERE
-  return -1
+
+  return np.sum(np.min(vector1, vector2))/np.sum(np.max(vector1, vector2))
 
 def compute_dice_similarity(vector1, vector2):
   '''Computes the cosine similarity of the two input vectors.
@@ -170,8 +169,8 @@ def compute_dice_similarity(vector1, vector2):
     A scalar similarity value.
   '''
 
-  # YOUR CODE HERE
-  return -1
+  j = compute_jaccard_similarity(vector1, vector2)
+  return 2*j/(1 + j)
 
 def rank_plays(target_play_index, term_document_matrix, similarity_fn):
   ''' Ranks the similarity of all of the plays to the target play.
