@@ -98,8 +98,6 @@ def create_term_context_matrix(line_tuples, vocab, context_window_size=1):
           word i in any sentence in the tuples.
     '''
 
-    vocab_to_id = dict(zip(vocab, range(0, len(vocab))))
-
     # YOUR CODE HERE
     tc_matrix = np.zeros((len(vocab), len(vocab)))
     vocab_to_id = dict(zip(vocab, range(0, len(vocab))))
