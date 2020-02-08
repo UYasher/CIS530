@@ -134,8 +134,21 @@ def create_PPMI_matrix(term_context_matrix):
        and the jth word in the term_context_matrix.
     '''
 
-    # YOUR CODE HERE
-    return None
+    ppmi_matrix = np.zeros(np.shape(term_context_matrix))
+    i_max, j_max = np.shape(term_context_matrix)
+    f_sum = np.sum(term_context_matrix)
+    row_sum = np.sum(term_context_matrix, axis=1) # might need to flip row_sum and col_sum if not working
+    col_sum = np.sum(term_context_matrix, axis=0)
+
+    for i in range(i_max):
+        for j in range(j_max):
+            p_ij = term_context_matrix[i,j]/f_sum
+            p_i = row_sum/f_sum
+            p_j = col_sum/f_sum
+
+            ppmi_matrix[i,j] = max(np.log2(p_ij/(p_i*p_j)), 0)
+
+    return ppmi_matrix
 
 
 def create_tf_idf_matrix(term_document_matrix):
@@ -223,7 +236,11 @@ def rank_plays(target_play_index, term_document_matrix, similarity_fn):
     '''
 
     # YOUR CODE HERE
-    return []
+
+    target_play_vector = term_document_matrix[:, target_play_index] # might need different axis
+    target_similarity = lambda x: similarity_fn(target_play_vector, x)
+
+    return np.apply_along_axis(target_similarity, 0, term_document_matrix) # Might need different axis
 
 
 def rank_words(target_word_index, matrix, similarity_fn):
