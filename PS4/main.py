@@ -101,7 +101,21 @@ def create_term_context_matrix(line_tuples, vocab, context_window_size=1):
     vocab_to_id = dict(zip(vocab, range(0, len(vocab))))
 
     # YOUR CODE HERE
-    return None
+    tc_matrix = np.zeros((len(vocab), len(vocab)))
+    vocab_to_id = dict(zip(vocab, range(0, len(vocab))))
+    # Iterate over all documents and corresponding lines
+    for doc, line in line_tuples:
+      words_in_line = line.split()
+      # Iterate over all words in a line
+      for ii in range(len(words_in_line)):
+        target_word = words_in_line[ii]
+        target_idx = vocab_to_id[target_word]
+        # Iterate over the given window
+        for jj in range(max(0, ii - context_window_size), min(ii + context_window_size + 1, len(words_in_line))):
+          context_word = words_in_line[jj]
+          context_idx = vocab_to_id[context_word]
+          tc_matrix[target_idx][context_idx] += 1
+    return tc_matrix
 
 
 def create_PPMI_matrix(term_context_matrix):
