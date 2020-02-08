@@ -98,8 +98,6 @@ def create_term_context_matrix(line_tuples, vocab, context_window_size=1):
           word i in any sentence in the tuples.
     '''
 
-    vocab_to_id = dict(zip(vocab, range(0, len(vocab))))
-
     # YOUR CODE HERE
     tc_matrix = np.zeros((len(vocab), len(vocab)))
     vocab_to_id = dict(zip(vocab, range(0, len(vocab))))
@@ -186,7 +184,7 @@ def compute_cosine_similarity(vector1, vector2):
       A scalar similarity value.
     '''
 
-    return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector1))
+    return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
 
 
 def compute_jaccard_similarity(vector1, vector2):
@@ -200,7 +198,7 @@ def compute_jaccard_similarity(vector1, vector2):
       A scalar similarity value.
     '''
 
-    return np.sum(np.min(vector1, vector2)) / np.sum(np.max(vector1, vector2))
+    return np.sum(np.minimum(vector1, vector2)) / np.sum(np.maximum(vector1, vector2))
 
 
 def compute_dice_similarity(vector1, vector2):
