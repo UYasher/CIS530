@@ -203,7 +203,7 @@ def compute_jaccard_similarity(vector1, vector2):
       A scalar similarity value.
     '''
 
-    return np.sum(np.min(vector1, vector2)) / np.sum(np.max(vector1, vector2))
+    return np.sum(np.minimum(vector1, vector2)) / np.sum(np.maximum(vector1, vector2))
 
 
 def compute_dice_similarity(vector1, vector2):
