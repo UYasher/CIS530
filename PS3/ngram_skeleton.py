@@ -142,7 +142,10 @@ class NgramModelWithInterpolation(NgramModel):
             self.n_grams_all[i].update(text)
 
     def prob(self, context, char):
-        lambdas = self.set_lambdas()
+        lambda1 = [0.16, 0.16, 0.17, 0.17, 0.17, 0.17]
+        lambda2 = [0.27, 0.23, 0.2, 0.15, 0.1, 0.05]
+        lambda3 = [0.05, 0.1, 0.15, 0.2, 0.23, 0.27]
+        lambdas = self.set_lambdas(lambdas=lambda3)
         output_prob = 0
         for ii in range(len(lambdas)):
             level_context = context[-ii:] if ii > 0 else ''
@@ -157,8 +160,8 @@ class NgramModelWithInterpolation(NgramModel):
                 return [1]
             for ii in range(self.order + 1):
                 lambdas.append(1 / (self.order + 1))
-        elif len(lambdas) != self.order:
-            return ValueError("Number of lambdas should be same as n")
+        elif len(lambdas) != self.order + 1:
+            return ValueError("Number of lambdas should be same as n + 1")
         elif sum(lambdas) != 1:
             return ValueError("Sum of lambdas should equal to 1")
         return lambdas
@@ -236,8 +239,8 @@ if __name__ == '__main__':
     # print("f1: " + str(f1_test))
     # print(confusion_test)
     path = 'shakespeare_input.txt'
-    model = create_ngram_model(NgramModel, path, n=2, k=0.1)
-    test_path = 'shakespeare_lines_processed.txt'
+    model = create_ngram_model(NgramModelWithInterpolation, path, n=5, k=0.1)
+    test_path = 'kanye_verses.txt'
     with open(test_path, encoding='utf-8', errors='ignore') as f:
         test_string = f.read()
     perp = model.perplexity(test_string)
