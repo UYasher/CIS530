@@ -256,8 +256,10 @@ def rank_words(target_word_index, matrix, similarity_fn):
       target word indexed by word_index
     '''
 
-    # YOUR CODE HERE
-    return []
+    target_play_vector = matrix[target_word_index, :]  # might need different axis
+    target_similarity = lambda x: similarity_fn(target_play_vector, x)
+
+    return np.argmax(np.apply_along_axis(target_similarity, 1, matrix))
 
 
 if __name__ == '__main__':
