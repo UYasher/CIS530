@@ -68,8 +68,13 @@ def create_term_document_matrix(line_tuples, document_names, vocab):
   vocab_to_id = dict(zip(vocab, range(0, len(vocab))))
   docname_to_id = dict(zip(document_names, range(0, len(document_names))))
 
-  # YOUR CODE HERE
-  return None
+  td_matrix = np.zeros((len(vocab), len(document_names)))
+
+  for doc_name, line in line_tuples:
+    for word in line:
+      td_matrix[vocab_to_id[word], docname_to_id[doc_name]] += 1
+
+  return td_matrix
 
 def create_term_context_matrix(line_tuples, vocab, context_window_size=1):
   '''Returns a numpy array containing the term context matrix for the input lines.
