@@ -153,8 +153,13 @@ def create_tf_idf_matrix(term_document_matrix):
       A numpy array with the same dimension as term_document_matrix, where
       A_ij is weighted by the inverse document frequency of document h.
     '''
+    # YOUR CODE HERE
+    num_documents = np.size(term_document_matrix, axis=1)
+    tf_matrix = np.log10(term_document_matrix + 1) + 1
+    idf_matrix = np.log10(num_documents / np.sum(np.heaviside(term_document_matrix, 0), axis=1))
+    tf_idf_matrix = (tf_matrix.T * idf_matrix).T
+    return tf_idf_matrix
 
-    
 
 
 def compute_cosine_similarity(vector1, vector2):
