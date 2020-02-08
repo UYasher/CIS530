@@ -163,8 +163,8 @@ class NgramModelWithInterpolation(NgramModel):
                 return [1]
             for ii in range(self.order + 1):
                 lambdas.append(1 / (self.order + 1))
-        elif len(lambdas) != self.order:
-            return ValueError("Number of lambdas should be same as n")
+        elif len(lambdas) != self.order + 1:
+            return ValueError("Number of lambdas should be same as n + 1")
         elif sum(lambdas) != 1:
             return ValueError("Sum of lambdas should equal to 1")
         return lambdas
