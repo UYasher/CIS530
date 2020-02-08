@@ -219,10 +219,10 @@ def rank_plays(target_play_index, term_document_matrix, similarity_fn):
 
     # YOUR CODE HERE
 
-    target_play_vector = term_document_matrix[:, target_play_index]
+    target_play_vector = term_document_matrix[:, target_play_index] # might need different axis
     target_similarity = lambda x: similarity_fn(target_play_vector, x)
 
-    return np.apply_along_axis(target_similarity, 0, term_document_matrix)
+    return np.apply_along_axis(target_similarity, 0, term_document_matrix) # Might need different axis
 
 
 def rank_words(target_word_index, matrix, similarity_fn):
