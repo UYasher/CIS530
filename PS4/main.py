@@ -155,7 +155,14 @@ def create_tf_idf_matrix(term_document_matrix):
     '''
 
     # YOUR CODE HERE
-    return None
+    tf_idf_matrix = np.zeros(np.shape(term_document_matrix))
+    num_documents = np.size(term_document_matrix, axis=1)
+    for ii in range(np.size(term_document_matrix, axis=0)):
+      for jj in range(num_documents):
+        tf = np.log(term_document_matrix[ii][jj], 10) + 1
+        idf = np.log(num_documents / np.sum(np.heaviside(term_document_matrix[ii], 0)), 10)
+        tf_idf_matrix[ii][jj] = tf * idf
+    return tf_idf_matrix
 
 
 def compute_cosine_similarity(vector1, vector2):
