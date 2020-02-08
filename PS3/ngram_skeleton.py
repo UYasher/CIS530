@@ -1,5 +1,6 @@
 import math, random
 from sklearn.metrics import f1_score, confusion_matrix, plot_confusion_matrix
+import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -147,6 +148,7 @@ class NgramModelWithInterpolation(NgramModel):
 
     def prob(self, context, char):
         lambdas = self.set_lambdas()
+        lambdas = self.lambdas
         output_prob = 0
         for ii in range(len(lambdas)):
             level_context = context[-ii:] if ii > 0 else ''
@@ -167,6 +169,8 @@ class NgramModelWithInterpolation(NgramModel):
             return ValueError("Sum of lambdas should equal to 1")
         return lambdas
 
+    def update_lambdas(self, lambdas):
+        self.lambdas = lambdas
 
 ################################################################################
 # Part 3: Your N-Gram Model Experimentation
@@ -183,14 +187,17 @@ def load_dataset(folder):
     return x, y
 
 
-class AllCountriesModel():
+class AllCountriesModel:
 
-    def __init__(self, n, k):
+    def __init__(self, n, k, interpolation=False):
         models = {}
         for code in COUNTRY_CODES:
-            # models[code] = (create_ngram_model(NgramModel, "./train/" + code + ".txt", n=n, k=k))
-            models[code] = (create_ngram_model(NgramModelWithInterpolation, "./train/" + code + ".txt", n=n, k=k))
+            if interpolation:
+                models[code] = (create_ngram_model(NgramModelWithInterpolation, "./train/" + code + ".txt", n=n, k=k))
+            else:
+                models[code] = (create_ngram_model(NgramModel, "./train/" + code + ".txt", n=n, k=k))
         self.models = models
+        self.n = n
 
     def predict_country(self, city):
         max_prob = 0
@@ -206,9 +213,9 @@ class AllCountriesModel():
                 arg_max = code
         return arg_max
 
-    def set_lambdas(self, lambdas):
+    def update_lambdas(self, lambdas):
         for code in self.models:
-            print(self.models[code].set_lambdas(lambdas)
+            self.models[code].update_lambdas(lambdas)
 
     def fit(self, cities):
         results = []
@@ -217,77 +224,129 @@ class AllCountriesModel():
 
         return results
 
-if __name__ == '__main__':
 
-    # fscores = np.array(
-    #     [[0, 0.4933333333333334, 0.4933333333333334, 0.4922222222222222, 0.4922222222222222, 0.4911111111111111, 0.49,
-    #       0.49, 0.4911111111111111, 0.4888888888888889],
-    #      [0, 0.6333333333333333, 0.6366666666666667, 0.6377777777777778, 0.6388888888888888, 0.64, 0.6422222222222222,
-    #       0.6455555555555555, 0.6488888888888888, 0.6466666666666666],
-    #      [0, 0.6311111111111111, 0.6344444444444445, 0.6311111111111111, 0.6355555555555555, 0.63, 0.6255555555555555,
-    #       0.62, 0.6088888888888889, 0.6022222222222222],
-    #      [0, 0.5844444444444444, 0.5566666666666666, 0.5188888888888888, 0.4955555555555556, 0.4677777777777778,
-    #       0.4444444444444444, 0.4211111111111111, 0.40444444444444444, 0.39111111111111113],
-    #      [0, 0.4177777777777778, 0.3522222222222222, 0.3188888888888889, 0.29333333333333333, 0.27555555555555555, 0.26,
-    #       0.2411111111111111, 0.21666666666666667, 0.20555555555555555],
-    #      [0, 0.27555555555555555, 0.21666666666666667, 0.19, 0.17888888888888888, 0.16444444444444445,
-    #       0.15555555555555556, 0.14777777777777779, 0.14333333333333334, 0.14],
-    #      [0, 0.18333333333333332, 0.15888888888888889, 0.1411111111111111, 0.13555555555555557, 0.13111111111111112,
-    #       0.12666666666666668, 0.12444444444444444, 0.12333333333333335, 0.12]]
-    # )
-    #
-    # plt.imshow(fscores, cmap='YlGnBu', interpolation='nearest', vmin=0, vmax=1, )
-    # plt.colorbar()
-    # plt.ylabel("n")
-    # plt.xlabel("k")
-    # plt.title("F-Scores")
-    # plt.show()
+def n_k_gridsearch(x_train, y_train, x_dev, y_dev, min_n=0, min_k=1, max_n=6, max_k=10):
+
+    n_k_arr_train = []
+    n_k_arr_dev = []
+
+    for n in range(0, max_n):
+        print("n = " + str(n))
+        n_k_arr_train.append([0])
+        n_k_arr_dev.append([0])
+        for k in range(1, max_k):
+            print("k = " + str(k))
+            model = AllCountriesModel(n=n, k=k)
+
+            y_train_pred = model.fit(x_train)
+            y_dev_pred = model.fit(x_dev)
+
+            f1_train = f1_score(y_train, y_train_pred, average="micro")
+            f1_dev = f1_score(y_dev, y_dev_pred, average="micro")
+
+            n_k_arr_train[n].append(f1_train)
+            n_k_arr_dev[n].append(f1_dev)
+
+    return n_k_arr_train, n_k_arr_dev
+
+
+def lambdas_gridsearch(x_train, y_train, x_dev, y_dev, model, steps=11):
+
+    train_performance_dict = {}
+    dev_performance_dict = {}
+
+    lambdas_list = [lambdas for lambdas in
+                     filter(
+                         lambda ntuple: sum(ntuple) == 1,
+                        [ntuple for ntuple in itertools.product( np.linspace(0, 1, steps), repeat=model.n)]
+                     )
+                    ]
+
+    for lambdas in lambdas_list:
+        print(lambdas)
+        model.update_lambdas(lambdas)
+
+        y_train_pred = model.fit(x_train)
+        y_dev_pred = model.fit(x_dev)
+
+        f1_train = f1_score(y_train, y_train_pred, average="micro")
+        f1_dev = f1_score(y_dev, y_dev_pred, average="micro")
+        print(f1_dev)
+
+        train_performance_dict[lambdas] = f1_train
+        dev_performance_dict[lambdas] = f1_dev
+
+    return train_performance_dict, dev_performance_dict
+
+
+if __name__ == '__main__':
 
     print("Loading Data...")
     x_train, y_train = load_dataset("train")
     x_dev, y_dev = load_dataset("val")
 
 
-    print("Training Model...")
-    n = 1
-    k = 8
-    lambdas_list = [
-        [1, 0],
-        [0, 1]
-    ]
+    # print("Finding Optimal n and k...")
+    # fscores_train, fscores_dev = n_k_gridsearch(x_train, y_train, x_dev, y_dev)
+    # fscores_train = np.array(fscores_train)
+    # fscores_dev = np.array(fscores_dev)
+    # print("Development F Scores for various n,k -- ")
+    # print(fscores_dev)
+    # print("Max of")
+    # print(max(map(max, fscores_dev)))
+    # print("@")
+    # print(np.argmax(fscores_dev))
+    # print("Additionally, here are the training F Scores --")
+    # print(fscores_train)
 
-    model = AllCountriesModel(n=n, k=k)
+    # print("Plotting n,k heatmap for dev set...")
+    # plt.imshow(fscores_dev, cmap='YlGnBu', interpolation='nearest', vmin=0, vmax=1, )
+    # plt.colorbar()
+    # plt.ylabel("n")
+    # plt.xlabel("k")
+    # plt.title("Development Set F-Scores")
+    # plt.show()
 
-    for lambdas in lambdas_list:
-        print(lambdas)
+    # print("Plotting n,k heatmap for test set...")
+    # plt.imshow(fscores_train, cmap='YlGnBu', interpolation='nearest', vmin=0, vmax=1, )
+    # plt.colorbar()
+    # plt.ylabel("n")
+    # plt.xlabel("k")
+    # plt.title("Training Set F-Scores")
+    # plt.show()
 
-        model.set_lambdas(lambdas)
+    n = 3
+    k = 3
+    print("n=" + str(n) + ", k=" + str(k))
+    model = AllCountriesModel(n=n, k=k, interpolation=True)
 
-        # print("Making Predictions...")
-        y_train_pred = model.fit(x_train)
-        y_dev_pred = model.fit(x_dev)
+    # print("Calculating Optimal Lambdas...")
+    # fscores_train_dict, fscores_dev_dict = lambdas_gridsearch(x_train, y_train, x_dev, y_dev, model, steps=5)
+    # print(fscores_dev_dict)
 
-        # print("Tabulating Results...")
-        f1_train = f1_score(y_train, y_train_pred, average="micro")
-        confusion_train = confusion_matrix(y_train, y_train_pred)
+    lambdas = (0.1, 0.5, 0.4)
+    model.update_lambdas(lambdas)
 
-        print("=====TRAINING=====")
-        print("f1: " + str(f1_train))
-        print(confusion_train)
+    y_train_pred = model.fit(x_train)
+    y_dev_pred = model.fit(x_dev)
 
-        f1_dev = f1_score(y_dev, y_dev_pred, average="micro")
-        confusion_dev = confusion_matrix(y_dev, y_dev_pred)
+    print("=====TRAINING=====")
+    f1_train = f1_score(y_train, y_train_pred, average="micro")
+    confusion_train = confusion_matrix(y_train, y_train_pred)
+    print("f1: " + str(f1_train))
+    print(confusion_train)
 
-        print("=====DEVELOPMENT=====")
-        print("f1: " + str(f1_dev))
-        print(confusion_dev)
+    print("=====DEVELOPMENT=====")
+    f1_dev = f1_score(y_dev, y_dev_pred, average="micro")
+    confusion_dev = confusion_matrix(y_dev, y_dev_pred)
+    print("f1: " + str(f1_dev))
+    print(confusion_dev)
 
-    # n_k_arr[n].append(f1_dev)
-
-    # m = create_ngram_model(NgramModel, 'shakespeare_input.txt', n=2)
-    # print(m.random_text(250))
-    # print(n_k_arr)
-    # print(max(map(max, n_k_arr)))
+    print("=====COMBINING FOR TEST SET=====")
+    x_combined = x_train + x_dev
+    y_combined = y_train + y_dev
+    model = AllCountriesModel(n=n, k=k, interpolation=True)
+    model.update_lambdas(lambdas)
 
     x_test = []
     with open("cities_test.txt", encoding='utf-8', errors='ignore') as input_file:
@@ -302,6 +361,11 @@ if __name__ == '__main__':
 
     print()
     print("Test set predictions can be found in test_labels.txt")
+
+    for i in range(len(x_dev)):
+        print(x_dev[i])
+        print(model.fit([x_dev[i]]))
+        print(y_dev[i])
 
     # path = 'shakespeare_input.txt'
     # model = create_ngram_model(NgramModel, path, n=2, k=0.1)
