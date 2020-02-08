@@ -186,7 +186,7 @@ def compute_cosine_similarity(vector1, vector2):
       A scalar similarity value.
     '''
 
-    return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector1))
+    return np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
 
 
 def compute_jaccard_similarity(vector1, vector2):
