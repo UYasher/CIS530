@@ -4,6 +4,10 @@ import subprocess
 import re
 import random
 import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
 
 
 def read_in_shakespeare():
@@ -136,7 +140,7 @@ def create_PPMI_matrix(term_context_matrix):
     col_sum = np.sum(term_context_matrix, axis=0)
     mult_sum = np.outer(row_sum, col_sum) / f_sum**2
     ppmi_matrix = np.maximum(np.log2(np.multiply(term_context_matrix / f_sum, 1 / mult_sum) + 1),
-                              np.zeros(np.shape(term_context_matrix)))
+                             np.zeros(np.shape(term_context_matrix)))
     return ppmi_matrix
 
 
@@ -226,7 +230,10 @@ def rank_plays(target_play_index, term_document_matrix, similarity_fn):
 
     target_play_vector = term_document_matrix[:, target_play_index]  # might need different axis
     target_similarity = lambda x: -1 * similarity_fn(target_play_vector, x)
-    return np.argsort(np.apply_along_axis(target_similarity, 0, term_document_matrix))  # Might need different axis
+    outputs = np.apply_along_axis(target_similarity, 0, term_document_matrix)
+    output_indices = np.argsort(outputs)
+    print(outputs[output_indices][1:11])
+    return output_indices  # Might need different axis
 
 
 def rank_words(target_word_index, matrix, similarity_fn):
@@ -248,8 +255,10 @@ def rank_words(target_word_index, matrix, similarity_fn):
 
     target_play_vector = matrix[target_word_index, :]  # might need different axis
     target_similarity = lambda x: -1 * similarity_fn(target_play_vector, x)
-
-    return np.argsort(np.apply_along_axis(target_similarity, 1, matrix))
+    outputs = np.apply_along_axis(target_similarity, 1, matrix)
+    output_indices = np.argsort(outputs)
+    print(outputs[output_indices][1:11])
+    return output_indices
 
 
 if __name__ == '__main__':
@@ -262,17 +271,17 @@ if __name__ == '__main__':
     tf_idf_matrix = create_tf_idf_matrix(td_matrix)
 
     print('Computing term context matrix...')
-    tc_matrix = create_term_context_matrix(tuples, vocab, context_window_size=2)
+    tc_matrix = create_term_context_matrix(tuples, vocab, context_window_size=3)
 
     print('Computing PPMI matrix...')
     PPMI_matrix = create_PPMI_matrix(tc_matrix)
 
-    random_idx = 1
+    random_idx = 9
     # random_idx = random.randint(0, len(document_names) - 1)
     similarity_fns = [compute_cosine_similarity, compute_jaccard_similarity, compute_dice_similarity]
     for sim_fn in similarity_fns:
         print('\nThe 10 most similar plays to "%s" using %s are:' % (document_names[random_idx], sim_fn.__qualname__))
-        ranks = rank_plays(random_idx, td_matrix, sim_fn)
+        ranks = rank_plays(random_idx, tf_idf_matrix, sim_fn)
         for idx in range(0, 10):
             doc_id = ranks[idx]
             print('%d: %s' % (idx + 1, document_names[doc_id]))
@@ -295,3 +304,34 @@ if __name__ == '__main__':
         for idx in range(0, 10):
             word_id = ranks[idx]
             print('%d: %s' % (idx + 1, vocab[word_id]))
+
+    # td_matrix = td_matrix.T
+    # tf_idf_matrix = tf_idf_matrix.T
+    # kmeans = KMeans(n_clusters=3)
+    # preds = kmeans.fit_predict(td_matrix)
+    # group_one = [name for idx, name in enumerate(document_names) if preds[idx] == 0]
+    # group_two = [name for idx, name in enumerate(document_names) if preds[idx] == 1]
+    # group_three = [name for idx, name in enumerate(document_names) if preds[idx] == 2]
+    # print(group_one)
+    # print(group_two)
+    # print(group_three)
+    # pca = PCA(n_components=3)
+    # reduced_matrix = pca.fit_transform(td_matrix)
+    # kmeans = KMeans(n_clusters=3)
+    # preds = kmeans.fit_predict(reduced_matrix)
+    # color = ['r', 'g', 'b']
+    # colors = [color[idx] for idx in preds]
+    # fig = plt.figure()
+    # ax = plt.axes(projection='3d')
+    # ax.scatter3D(reduced_matrix[:, 0], reduced_matrix[:, 1], reduced_matrix[:, 2], c=colors)
+    # plt.title('Principal Components of Document Clusters')
+    # ax.set_xlabel('Component 1')
+    # ax.set_ylabel('Component 2')
+    # ax.set_zlabel('Component 3')
+    # plt.show()
+    # group_one = [name for idx, name in enumerate(document_names) if preds[idx] == 0]
+    # group_two = [name for idx, name in enumerate(document_names) if preds[idx] == 1]
+    # group_three = [name for idx, name in enumerate(document_names) if preds[idx] == 2]
+    # print(group_one)
+    # print(group_two)
+    # print(group_three)
