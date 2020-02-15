@@ -163,7 +163,6 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
         paraphrase_list = word_to_paraphrases_dict[target_word]
         k = word_to_k_dict[target_word]
 
-        vectors = Magnitude("500mostfreq-window-3.vec.filter.magnitude")
         x = vectors.query(paraphrase_list)
         kmeans = KMeans(n_clusters=k).fit(x)
 
@@ -191,7 +190,12 @@ def cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict):
     for target_word in word_to_paraphrases_dict.keys():
         paraphrase_list = word_to_paraphrases_dict[target_word]
         k = word_to_k_dict[target_word]
-        # TODO: Implement
+
+        x = vectors.query(paraphrase_list)
+        kmeans = KMeans(n_clusters=k).fit(x)
+
+        print("kmeans.labels_")
+        print(kmeans.labels_)
         clusterings[target_word] = None
 
     return clusterings
