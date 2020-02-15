@@ -17,6 +17,26 @@ def main():
     correlation, p_value = stats.kendalltau(human_scores, vector_scores)
     print(f'Correlation = {correlation}, P Value = {p_value}')
 
+    df['GoogleNews-vectors'] = vector_scores
+
+    simlex_sorted = df.values.tolist().sort(lambda row1, row2: row1[2] - row2[2])
+    print("According to simlex, the most similar are: ")
+    print(simlex_sorted[0])
+
+    gnews_sorted = df.values.tolist().sort(lambda row1, row2: row1[3] - row2[3])
+    print("According to GoogleNew-vectors, the most similar are:")
+    print(gnews_sorted[0])
+
+    simlex_sorted = df.values.tolist().sort(lambda row1, row2: row1[2] - row2[2])
+    print("According to simlex, the least similar are: ")
+    print(simlex_sorted[0])
+
+    gnews_sorted = df.values.tolist().sort(lambda row1, row2: row1[3] - row2[3])
+    print("According to GoogleNew-vectors, the least similar are:")
+    print(gnews_sorted[0])
+
+    correlation, p_value = stats.kendalltau(human_scores, vector_scores)
+    print(f'Correlation = {correlation}, P Value = {p_value}')
 
 if __name__ == '__main__':
     main()
