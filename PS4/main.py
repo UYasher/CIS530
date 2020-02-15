@@ -4,6 +4,8 @@ import subprocess
 import re
 import random
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 
 
 def read_in_shakespeare():
@@ -39,6 +41,46 @@ def read_in_shakespeare():
         document_names = [line.strip() for line in f]
 
     return tuples, document_names, vocab
+
+
+def read_in_shakespeare_characters(include_act=False):
+    '''Reads in the Shakespeare dataset processes it into a list of tuples.
+       Also reads in the vocab and play name lists from files.
+
+    Each tuple consists of
+    tuple[0]: The name of the play
+    tuple[1] A line from the play as a list of tokenized words.
+
+    Returns:
+      tuples: A list of tuples in the above format.
+      document_names: A list of the plays present in the corpus.
+      vocab: A list of all tokens in the vocabulary.
+    '''
+
+    tuples = []
+
+    with open('will_play_text.csv') as f:
+        csv_reader = csv.reader(f, delimiter=';')
+        character_names = []
+        for row in csv_reader:
+            character_name = row[4]
+            if include_act:
+                #print("row[3]: " + str(row[3]))
+                character_name += row[3].split(".")[0]
+                #print(character_name)
+            character_names.append(character_name)
+            line = row[5]
+            line_tokens = re.sub(r'[^a-zA-Z0-9\s]', ' ', line).split()
+            line_tokens = [token.lower() for token in line_tokens]
+
+            tuples.append((character_name, line_tokens))
+
+    with open('vocab.txt') as f:
+        vocab = [line.strip() for line in f]
+
+    character_names = list(set(character_names))
+
+    return tuples, character_names, vocab
 
 
 def get_row_vector(matrix, row_id):
@@ -253,6 +295,7 @@ def rank_words(target_word_index, matrix, similarity_fn):
 
 
 if __name__ == '__main__':
+    '''
     tuples, document_names, vocab = read_in_shakespeare()
 
     print('Computing term document matrix...')
@@ -295,3 +338,122 @@ if __name__ == '__main__':
         for idx in range(0, 10):
             word_id = ranks[idx]
             print('%d: %s' % (idx + 1, vocab[word_id]))
+    '''
+
+    '''
+    # Insult Analysis
+    tuples, document_names, vocab = read_in_shakespeare()
+
+    print('Computing term context matrix...')
+    tc_matrix = create_term_context_matrix(tuples, vocab, context_window_size=2)
+
+    print('Computing PPMI matrix...')
+    PPMI_matrix = create_PPMI_matrix(tc_matrix)
+
+    similarity_fns = [compute_cosine_similarity, compute_jaccard_similarity, compute_dice_similarity]
+
+    word = 'loon'
+    vocab_to_index = dict(zip(vocab, range(0, len(vocab))))
+    for sim_fn in similarity_fns:
+        print('\nThe 10 most similar words to "%s" using %s on term-context frequency matrix are:' % (
+            word, sim_fn.__qualname__))
+        ranks = rank_words(vocab_to_index[word], tc_matrix, sim_fn)
+        for idx in range(0, 10):
+            word_id = ranks[idx]
+            print('%d: %s' % (idx + 1, vocab[word_id]))
+
+    word = 'loon'
+    vocab_to_index = dict(zip(vocab, range(0, len(vocab))))
+    for sim_fn in similarity_fns:
+        print('\nThe 10 most similar words to "%s" using %s on PPMI matrix are:' % (word, sim_fn.__qualname__))
+        ranks = rank_words(vocab_to_index[word], PPMI_matrix, sim_fn)
+        for idx in range(0, 10):
+            word_id = ranks[idx]
+            print('%d: %s' % (idx + 1, vocab[word_id]))
+
+    '''
+
+    # Character Analysis
+    tuples, character_names, vocab = read_in_shakespeare_characters(include_act=True)
+
+    print('Computing term document matrix...')
+    td_matrix = create_term_document_matrix(tuples, character_names, vocab)
+
+    print('Computing tf-idf matrix...')
+    tf_idf_matrix = create_tf_idf_matrix(td_matrix)
+
+    character_to_index = dict(zip(character_names, range(0, len(character_names))))
+    #character = 'DEMETRIUS1'
+
+    # character_id = character_to_index[character]
+    # similarity_fns = [compute_cosine_similarity, compute_jaccard_similarity, compute_dice_similarity]
+    # for sim_fn in similarity_fns:
+    #     print('\nThe 10 most similar characters to "%s" using %s are:' % (character_names[character_id], sim_fn.__qualname__))
+    #     ranks = rank_plays(character_id, td_matrix, sim_fn)
+    #     for idx in range(0, 10):
+    #         doc_id = ranks[idx]
+    #         print('%d: %s' % (idx + 1, character_names[doc_id]))
+
+    # DYNAMIC CHARACTERS
+    comparison_characters = ["DEMETRIUS" + str(i) for i in range(1, 6, 1)]
+    #comparison_characters = ["PUCK" + str(i) for i in range(2, 6, 1)]
+    #comparison_characters = [ "LYSANDER" + str(i) for i in range(1,6, 1)]
+    #comparison_characters = ["ROMEO" + str(i) for i in [1, 2, 3, 5]]
+    #comparison_characters = ["HAMLET" + str(i) for i in [1, 2, 3, 4, 5]]
+    #comparison_characters = ["KING LEAR" + str(i) for i in [1, 2, 3, 4, 5]]
+
+    # STATIC CHARACTERS
+    #comparison_characters = ["THESEUS" + str(i) for i in [1,4,5]]
+    #comparison_characters = ["HIPPOLYTA" + str(i) for i in [1, 4, 5]]
+    #comparison_characters = ["EGEUS" + str(i) for i in [1, 4]]
+    #comparison_characters = ["BENVOLIO" + str(i) for i in [1, 2, 3]]
+    #comparison_characters = ["MERCUTIO" + str(i) for i in [1, 2, 3]]
+    #comparison_characters = ["HORATIO" + str(i) for i in [1, 3, 4, 5]]
+    #comparison_characters = ["HERO" + str(i) for i in [1, 2, 3, 4, 5]]
+    #comparison_characters = ["CLAUDIO" + str(i) for i in [1, 2, 3, 4, 5]]
+
+    similarity_fns = [compute_cosine_similarity, compute_jaccard_similarity, compute_dice_similarity]
+    sim_matrices = { sim_fn.__qualname__:[] for sim_fn in similarity_fns }
+    for i in range(len(comparison_characters)):
+        character = comparison_characters[i]
+        print("Conduting comparions for " + character)
+        character_vec = get_column_vector(td_matrix, character_to_index[character])
+        for sim_fn in similarity_fns:
+            print('\nThe character similarities to to "%s" using %s are:' % (
+            character, sim_fn.__qualname__))
+
+            sim_matrices[sim_fn.__qualname__].append([])
+
+            for j in range(len(comparison_characters)):
+                comparison_character = comparison_characters[j]
+                comp_char_vec = get_column_vector(td_matrix, character_to_index[comparison_character])
+                similarity = sim_fn(character_vec, comp_char_vec)
+                print("His similarity to " + comparison_character + " is: " + str(similarity))
+                sim_matrices[sim_fn.__qualname__][i].append(similarity)
+
+    print(sim_matrices)
+    for sim_fn in similarity_fns:
+        fig, ax = plt.subplots()
+        sim_matrix = np.array(sim_matrices[sim_fn.__qualname__])
+        im = ax.imshow(sim_matrix)
+
+        # We want to show all ticks...
+        ax.set_xticks(np.arange(len(comparison_characters)))
+        ax.set_yticks(np.arange(len(comparison_characters)))
+        # ... and label them with the respective list entries
+        ax.set_xticklabels(comparison_characters)
+        ax.set_yticklabels(comparison_characters)
+
+        # Rotate the tick labels and set their alignment.
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+                 rotation_mode="anchor")
+
+        # Loop over data dimensions and create text annotations.
+        for i in range(len(comparison_characters)):
+            for j in range(len(comparison_characters)):
+                text = ax.text(j, i, round(sim_matrix[i, j], 3),
+                               ha="center", va="center", color="w")
+
+        ax.set_title("Character " + sim_fn.__qualname__ + " Similarity Across Acts")
+        fig.tight_layout()
+        plt.show()
