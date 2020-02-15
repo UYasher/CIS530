@@ -122,11 +122,26 @@ def cluster_random(word_to_paraphrases_dict, word_to_k_dict):
     """
     clusterings = {}
 
+    random.seed("123")
+
     for target_word in word_to_paraphrases_dict.keys():
         paraphrase_list = word_to_paraphrases_dict[target_word]
         k = word_to_k_dict[target_word]
         # TODO: Implement
-        clusterings[target_word] = None
+
+        # Give each cluster at least one word
+        x = random.sample(paraphrase_list, k)
+        clusters = []
+        for i in range(k):
+            clusters.append([x[i]])
+
+        # Assign the remaining words to clusters at random
+        ys = [word for word in paraphrase_list if word not in x]
+        for y in ys:
+            i = random.randint(k)
+            clusters[i].append(y)
+
+        clusterings[target_word] = clusters
 
     return clusterings
 
@@ -147,7 +162,13 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
     for target_word in word_to_paraphrases_dict.keys():
         paraphrase_list = word_to_paraphrases_dict[target_word]
         k = word_to_k_dict[target_word]
-        # TODO: Implement
+
+        x = vectors.query(paraphrase_list)
+        kmeans = KMeans(n_clusters=k).fit(x)
+
+        print("kmeans.labels_")
+        print(kmeans.labels_)
+
         clusterings[target_word] = None
 
     return clusterings
@@ -169,7 +190,12 @@ def cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict):
     for target_word in word_to_paraphrases_dict.keys():
         paraphrase_list = word_to_paraphrases_dict[target_word]
         k = word_to_k_dict[target_word]
-        # TODO: Implement
+
+        x = vectors.query(paraphrase_list)
+        kmeans = KMeans(n_clusters=k).fit(x)
+
+        print("kmeans.labels_")
+        print(kmeans.labels_)
         clusterings[target_word] = None
 
     return clusterings
