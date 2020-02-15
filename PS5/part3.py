@@ -122,11 +122,26 @@ def cluster_random(word_to_paraphrases_dict, word_to_k_dict):
     """
     clusterings = {}
 
+    random.seed("123")
+
     for target_word in word_to_paraphrases_dict.keys():
         paraphrase_list = word_to_paraphrases_dict[target_word]
         k = word_to_k_dict[target_word]
         # TODO: Implement
-        clusterings[target_word] = None
+
+        # Give each cluster at least one word
+        x = random.sample(word_to_paraphrases_dict[target_word], k)
+        clusters = []
+        for i in range(k):
+            clusters.append([x[i]])
+
+        # Assign the remaining words to clusters at random
+        ys = [word for word in word_to_paraphrases_dict[target_word] if word not in x]
+        for y in ys:
+            i = random.randint(k)
+            clusters[i].append(y)
+
+        clusterings[target_word] = clusters
 
     return clusterings
 
