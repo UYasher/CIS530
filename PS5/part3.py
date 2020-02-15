@@ -130,13 +130,13 @@ def cluster_random(word_to_paraphrases_dict, word_to_k_dict):
         # TODO: Implement
 
         # Give each cluster at least one word
-        x = random.sample(word_to_paraphrases_dict[target_word], k)
+        x = random.sample(paraphrase_list, k)
         clusters = []
         for i in range(k):
             clusters.append([x[i]])
 
         # Assign the remaining words to clusters at random
-        ys = [word for word in word_to_paraphrases_dict[target_word] if word not in x]
+        ys = [word for word in paraphrase_list if word not in x]
         for y in ys:
             i = random.randint(k)
             clusters[i].append(y)
@@ -162,7 +162,9 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
     for target_word in word_to_paraphrases_dict.keys():
         paraphrase_list = word_to_paraphrases_dict[target_word]
         k = word_to_k_dict[target_word]
-        # TODO: Implement
+
+        kmeans = KMeans(n_clusters=k).fit(X)
+
         clusterings[target_word] = None
 
     return clusterings
