@@ -138,7 +138,7 @@ def cluster_random(word_to_paraphrases_dict, word_to_k_dict):
         # Assign the remaining words to clusters at random
         ys = [word for word in paraphrase_list if word not in x]
         for y in ys:
-            i = random.randint(k)
+            i = random.randint(0, k-1)
             clusters[i].append(y)
 
         clusterings[target_word] = clusters
@@ -156,7 +156,7 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
     where each list corresponds to a cluster
     """
     # Note: any vector representation should be in the same directory as this file
-    vectors = Magnitude("coocvec-500mostfreq-window-3.filter.magnitude")
+    vectors = Magnitude("vectors/coocvec-500mostfreq-window-3.filter.magnitude")
     clusterings = {}
 
     for target_word in word_to_paraphrases_dict.keys():
@@ -165,12 +165,16 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
 
         x = vectors.query(paraphrase_list)
         kmeans = KMeans(n_clusters=k).fit(x)
+        labels = kmeans.labels_
 
-        print("kmeans.labels_")
-        print(kmeans.labels_)
+        clusterings[target_word] = []
 
-        clusterings[target_word] = None
-
+        for ii in range(k):
+            words = []
+            for idx, num in enumerate(labels):
+                if num == ii:
+                    words.append(paraphrase_list[idx])
+            clusterings[target_word].append(words)
     return clusterings
 
 
@@ -219,3 +223,9 @@ def cluster_with_no_k(word_to_paraphrases_dict):
         clusterings[target_word] = None
 
     return clusterings
+
+
+word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/dev_input.txt')
+gold_clusterings = load_output_file('data/dev_output.txt')
+predicted_clusterings = cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
+evaluate_clusterings(gold_clusterings, predicted_clusterings)

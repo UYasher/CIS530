@@ -4,7 +4,7 @@ from pymagnitude import *
 
 
 def main():
-    vectors = Magnitude('GoogleNews-vectors-negative300.magnitude')
+    vectors = Magnitude('vectors/glove.840B.300d.magnitude')
     df = pd.read_csv('data/SimLex-999.txt', sep='\t')[['word1', 'word2', 'SimLex999']]
     human_scores = []
     vector_scores = []
@@ -17,26 +17,24 @@ def main():
     correlation, p_value = stats.kendalltau(human_scores, vector_scores)
     print(f'Correlation = {correlation}, P Value = {p_value}')
 
-    df['GoogleNews-vectors'] = vector_scores
+    df['vector_scores'] = vector_scores
 
-    simlex_sorted = df.values.tolist().sort(lambda row1, row2: row1[2] - row2[2])
+    simlex_sorted = sorted(df.values.tolist(), key=lambda row1: -1 * row1[2])
     print("According to simlex, the most similar are: ")
     print(simlex_sorted[0])
 
-    gnews_sorted = df.values.tolist().sort(lambda row1, row2: row1[3] - row2[3])
+    vectors_sorted = sorted(df.values.tolist(), key=lambda row1: -1 * row1[3])
     print("According to GoogleNew-vectors, the most similar are:")
-    print(gnews_sorted[0])
+    print(vectors_sorted[0])
 
-    simlex_sorted = df.values.tolist().sort(lambda row1, row2: row1[2] - row2[2])
+    simlex_sorted = sorted(df.values.tolist(), key=lambda row1: row1[2])
     print("According to simlex, the least similar are: ")
     print(simlex_sorted[0])
 
-    gnews_sorted = df.values.tolist().sort(lambda row1, row2: row1[3] - row2[3])
+    vectors_sorted = sorted(df.values.tolist(), key=lambda row1: row1[3])
     print("According to GoogleNew-vectors, the least similar are:")
-    print(gnews_sorted[0])
+    print(vectors_sorted[0])
 
-    correlation, p_value = stats.kendalltau(human_scores, vector_scores)
-    print(f'Correlation = {correlation}, P Value = {p_value}')
 
 if __name__ == '__main__':
     main()
