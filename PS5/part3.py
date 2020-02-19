@@ -1,7 +1,8 @@
 from pymagnitude import *
 from itertools import combinations
 from prettytable import PrettyTable
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, SpectralClustering, DBSCAN
+from sklearn.decomposition import PCA
 import random
 
 
@@ -156,7 +157,7 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
     where each list corresponds to a cluster
     """
     # Note: any vector representation should be in the same directory as this file
-    vectors = Magnitude("vectors/coocvec-500mostfreq-window-3.filter.magnitude")
+    vectors = Magnitude("vectors/coocvec-500mostfreq-window-7.magnitude")
     clusterings = {}
 
     for target_word in word_to_paraphrases_dict.keys():
@@ -164,11 +165,13 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
         k = word_to_k_dict[target_word]
 
         x = vectors.query(paraphrase_list)
-        kmeans = KMeans(n_clusters=k).fit(x)
-        labels = kmeans.labels_
+        # x = PCA(n_components=min(np.size(x, axis=0), 20)).fit_transform(x)
+        clusters = KMeans(n_clusters=k).fit(x)
+        # clusters = SpectralClustering(n_clusters=k).fit(x)
+        # clusters = DBSCAN().fit(x)
+        labels = clusters.labels_
 
         clusterings[target_word] = []
-
         for ii in range(k):
             words = []
             for idx, num in enumerate(labels):
@@ -225,7 +228,9 @@ def cluster_with_no_k(word_to_paraphrases_dict):
     return clusterings
 
 
-word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/dev_input.txt')
-gold_clusterings = load_output_file('data/dev_output.txt')
+# word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/dev_input.txt')
+word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/test_input.txt')
+# gold_clusterings = load_output_file('data/dev_output.txt')
 predicted_clusterings = cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
-evaluate_clusterings(gold_clusterings, predicted_clusterings)
+write_to_output_file('test_output_sparse.txt', predicted_clusterings)
+# evaluate_clusterings(gold_clusterings, predicted_clusterings)
