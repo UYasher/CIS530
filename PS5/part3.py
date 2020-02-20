@@ -1,7 +1,7 @@
 from pymagnitude import *
 from itertools import combinations
 from prettytable import PrettyTable
-from sklearn.cluster import KMeans, SpectralClustering, DBSCAN
+from sklearn.cluster import KMeans, SpectralClustering, DBSCAN, AgglomerativeClustering
 from sklearn.decomposition import PCA
 from PS4.main import create_PPMI_matrix
 import random
@@ -171,6 +171,7 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
         # x = PCA(n_components=min(np.size(x, axis=0), 15)).fit_transform(x)
         # clusters = KMeans(n_clusters=k).fit(x)
         clusters = SpectralClustering(n_clusters=k).fit(x)
+        # clusters = AgglomerativeClustering(n_clusters=k).fit(x)
         # clusters = DBSCAN().fit(x)
         labels = clusters.labels_
 
@@ -206,7 +207,8 @@ def cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict):
         x = vectors.query(paraphrase_list)
         # x = PCA(n_components=min(np.size(x, axis=0), 15)).fit_transform(x)
         # labels = KMeans(n_clusters=k).fit_predict(x)
-        labels = SpectralClustering(n_clusters=k).fit_predict(x)
+        labels = AgglomerativeClustering(n_clusters=k, linkage='single').fit_predict(x)
+        # labels = SpectralClustering(n_clusters=k).fit_predict(x)
 
         dense_clusterings[target_word] = []
         for ii in range(k):
@@ -247,5 +249,5 @@ evaluate_clusterings(gold_clusterings, predicted_clusterings)
 # write_to_output_file('dev_output_sparse.txt', predicted_clusterings)
 
 # word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/test_input.txt')
-# predicted_clusterings = cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
-# write_to_output_file('test_output_sparse.txt', predicted_clusterings)
+# predicted_clusterings = cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict)
+# write_to_output_file('test_output_leaderboard.txt', predicted_clusterings)
