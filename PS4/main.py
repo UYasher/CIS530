@@ -180,7 +180,7 @@ def create_PPMI_matrix(term_context_matrix):
     row_sum = np.sum(term_context_matrix, axis=1) # might need to flip row_sum and col_sum if not working
     col_sum = np.sum(term_context_matrix, axis=0)
     mult_sum = np.outer(row_sum, col_sum) / f_sum**2
-    ppmi_matrix = np.maximum(np.log2(np.multiply(term_context_matrix / f_sum, 1 / mult_sum) + 1),
+    ppmi_matrix = np.maximum(np.log2(np.multiply(term_context_matrix / (f_sum + 1e-6), 1 / (mult_sum + 1e-6)) + 1),
                              np.zeros(np.shape(term_context_matrix)))
     return ppmi_matrix
 
