@@ -3,6 +3,8 @@ from itertools import combinations
 from prettytable import PrettyTable
 from sklearn.cluster import KMeans
 import random
+from sklearn.metrics import silhouette_score
+from xgboost import XGBClassifier
 
 
 def load_input_file(file_path):
@@ -215,7 +217,79 @@ def cluster_with_no_k(word_to_paraphrases_dict):
 
     for target_word in word_to_paraphrases_dict.keys():
         paraphrase_list = word_to_paraphrases_dict[target_word]
-        # TODO: Implement
+
+        '''
+        # Calculate silhouette scores for different k
+        x = vectors.query(paraphrase_list)
+        range_n_clusters = [1, 2, 3, 4, 5, 6]
+
+        for n_clusters in range_n_clusters:
+            clusterer = KMeans(n_clusters=n_clusters, random_state=10)
+            cluster_labels = clusterer.fit_predict(x)
+
+            silhouette_avg = silhouette_score(x, cluster_labels)
+            print("For n_clusters =", n_clusters,
+                  "The average silhouette_score is :", silhouette_avg)
+      '''
+
+        # Baseline Method (k=5)
+        k = 5
+        x = vectors.query(paraphrase_list)
+        kmeans = KMeans(n_clusters=k).fit(x)
+
+        print("kmeans.labels_")
+        print(kmeans.labels_)
         clusterings[target_word] = None
 
     return clusterings
+
+
+def caluclate_silhouettes(word_to_paraphrases_dict, vectors):
+    pass
+
+
+def train_k_predictor(train_word_to_paraphrases_dict, train_word_to_k_dict, dev_word_to_paraphrases_dict, dev_word_to_k_dict):
+
+    # Init
+    vectors = Magnitude("GoogleNews-vectors-negative300.filter.magnitude")
+    clusterings = {}
+    x_train = []
+    y_train = []
+
+    # Generate silhouette feature vector and label vector
+    for target_word in train_word_to_paraphrases_dict.keys():
+        paraphrase_list = train_word_to_paraphrases_dict[target_word]
+
+        x = vectors.query(paraphrase_list)
+        range_n_clusters = [1, 2, 3, 4, 5, 6]
+
+        silhouette_avgs = []
+
+        for n_clusters in range_n_clusters:
+
+            clusterer = KMeans(n_clusters=n_clusters, random_state=10)
+            cluster_labels = clusterer.fit_predict(x)
+
+            silhouette_avg = silhouette_score(x, cluster_labels)
+            print("For n_clusters =", n_clusters,
+                  "The average silhouette_score is :", silhouette_avg)
+
+            silhouette_avgs.append(silhouette_avg)
+
+        x_train.append(silhouette_avgs)
+        y_train.append(train_word_to_k_dict[target_word])
+
+    x_train = np.array(x_train)
+    y_train = np.array(y_train)
+
+    # Generate label vector
+
+
+
+    # train model
+
+    model = XGBClassifier()
+    model.fit(x_train, y_train)
+
+    # Print model performance
+
