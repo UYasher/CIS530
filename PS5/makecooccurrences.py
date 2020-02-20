@@ -22,7 +22,7 @@ with gzip.open(corpus, "rt", encoding='utf8', errors="ignore") as f:
 total = i
 
 # This maps the context words to integer (and vice versa)
-D = 500
+D = 1000
 topD = sorted(freq.items(), key=lambda p: p[1], reverse=True)[:D]
 topD_map = {}
 topD_map_reverse = {}
