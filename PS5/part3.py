@@ -158,7 +158,7 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
     where each list corresponds to a cluster
     """
     # Note: any vector representation should be in the same directory as this file
-    vectors = Magnitude("vectors/coocvec-1000mostfreq-window-7.magnitude")
+    vectors = Magnitude("vectors/coocvec-500mostfreq-window-7.magnitude")
     clusterings = {}
 
     for target_word in word_to_paraphrases_dict.keys():
@@ -167,12 +167,11 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
 
         x = vectors.query(paraphrase_list)
         x = np.maximum(x, np.zeros(np.shape(x)))
-        x = create_PPMI_matrix(x)
-        # x = PCA(n_components=min(np.size(x, axis=0), 15)).fit_transform(x)
-        # clusters = KMeans(n_clusters=k).fit(x)
-        clusters = SpectralClustering(n_clusters=k).fit(x)
+        # x = create_PPMI_matrix(x)
+        x = PCA(n_components=min(np.size(x, axis=0), 100)).fit_transform(x)
+        clusters = KMeans(n_clusters=k).fit(x)
+        # clusters = SpectralClustering(n_clusters=k).fit(x)
         # clusters = AgglomerativeClustering(n_clusters=k).fit(x)
-        # clusters = DBSCAN().fit(x)
         labels = clusters.labels_
 
         clusterings[target_word] = []
@@ -196,8 +195,11 @@ def cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict):
     where each list corresponds to a cluster
     """
     # Note: any vector representation should be in the same directory as this file
-    # vectors = Magnitude("vectors/GoogleNews-vectors-negative300.filter.magnitude")
-    vectors = Magnitude("vectors/crawl-300d-2M.magnitude")
+    vectors = Magnitude("vectors/GoogleNews-vectors-negative300.filter.magnitude")
+    # vectors = Magnitude("vectors/glove.840B.300d.magnitude")
+    # vectors = Magnitude("vectors/glove.6B.300d.magnitude")
+    # vectors = Magnitude("vectors/crawl-300d-2M.magnitude")
+    # vectors = Magnitude("vectors/GoogleNews-retrofit-wordnet.magnitude")
     dense_clusterings = {}
 
     for target_word in word_to_paraphrases_dict.keys():
@@ -231,23 +233,23 @@ def cluster_with_no_k(word_to_paraphrases_dict):
     where each list corresponds to a cluster
     """
     # Note: any vector representation should be in the same directory as this file
-    vectors = Magnitude("vectors/GoogleNews-vectors-negative300.filter.magnitude")
+    vectors = Magnitude("vectors/crawl-300d-2M.magnitude")
     clusterings = {}
 
     for target_word in word_to_paraphrases_dict.keys():
         paraphrase_list = word_to_paraphrases_dict[target_word]
         # TODO: Implement
-        clusterings[target_word] = None
+        clusterings[target_word] = []
 
     return clusterings
 
 
-word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/dev_input.txt')
-gold_clusterings = load_output_file('data/dev_output.txt')
-predicted_clusterings = cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict)
-evaluate_clusterings(gold_clusterings, predicted_clusterings)
+# word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/dev_input.txt')
+# gold_clusterings = load_output_file('data/dev_output.txt')
+# predicted_clusterings = cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict)
+# evaluate_clusterings(gold_clusterings, predicted_clusterings)
 # write_to_output_file('dev_output_sparse.txt', predicted_clusterings)
 
-# word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/test_input.txt')
-# predicted_clusterings = cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict)
-# write_to_output_file('test_output_leaderboard.txt', predicted_clusterings)
+word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/test_input.txt')
+predicted_clusterings = cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict)
+write_to_output_file('test_output_leaderboard.txt', predicted_clusterings)
