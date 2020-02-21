@@ -5,6 +5,8 @@ from sklearn.cluster import KMeans, SpectralClustering, DBSCAN, AgglomerativeClu
 from sklearn.decomposition import PCA
 from PS4.main import create_PPMI_matrix
 import random
+from sklearn.metrics import silhouette_score
+from xgboost import XGBClassifier
 
 
 def load_input_file(file_path):
@@ -158,7 +160,7 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
     where each list corresponds to a cluster
     """
     # Note: any vector representation should be in the same directory as this file
-    vectors = Magnitude("vectors/coocvec-500mostfreq-window-7.magnitude")
+    vectors = Magnitude("vectors/coocvec-1000mostfreq-window-7.magnitude")
     clusterings = {}
 
     for target_word in word_to_paraphrases_dict.keys():
@@ -167,11 +169,12 @@ def cluster_with_sparse_representation(word_to_paraphrases_dict, word_to_k_dict)
 
         x = vectors.query(paraphrase_list)
         x = np.maximum(x, np.zeros(np.shape(x)))
-        # x = create_PPMI_matrix(x)
-        x = PCA(n_components=min(np.size(x, axis=0), 100)).fit_transform(x)
-        clusters = KMeans(n_clusters=k).fit(x)
-        # clusters = SpectralClustering(n_clusters=k).fit(x)
+        x = create_PPMI_matrix(x)
+        # x = PCA(n_components=min(np.size(x, axis=0), 15)).fit_transform(x)
+        # clusters = KMeans(n_clusters=k).fit(x)
+        clusters = SpectralClustering(n_clusters=k).fit(x)
         # clusters = AgglomerativeClustering(n_clusters=k).fit(x)
+        # clusters = DBSCAN().fit(x)
         labels = clusters.labels_
 
         clusterings[target_word] = []
@@ -238,12 +241,86 @@ def cluster_with_no_k(word_to_paraphrases_dict):
 
     for target_word in word_to_paraphrases_dict.keys():
         paraphrase_list = word_to_paraphrases_dict[target_word]
-        # TODO: Implement
-        clusterings[target_word] = []
+
+        '''
+        # Calculate silhouette scores for different k
+        x = vectors.query(paraphrase_list)
+        range_n_clusters = [1, 2, 3, 4, 5, 6]
+
+        for n_clusters in range_n_clusters:
+            clusterer = KMeans(n_clusters=n_clusters, random_state=10)
+            cluster_labels = clusterer.fit_predict(x)
+
+            silhouette_avg = silhouette_score(x, cluster_labels)
+            print("For n_clusters =", n_clusters,
+                  "The average silhouette_score is :", silhouette_avg)
+      '''
+
+        # Baseline Method (k=5)
+        k = 5
+        x = vectors.query(paraphrase_list)
+        kmeans = KMeans(n_clusters=k).fit(x)
+
+        print("kmeans.labels_")
+        print(kmeans.labels_)
+        clusterings[target_word] = None
 
     return clusterings
 
 
+def caluclate_silhouettes(word_to_paraphrases_dict, vectors):
+    pass
+
+
+def train_k_predictor(train_word_to_paraphrases_dict, train_word_to_k_dict, dev_word_to_paraphrases_dict, dev_word_to_k_dict):
+
+    # Init
+    vectors = Magnitude("GoogleNews-vectors-negative300.filter.magnitude")
+    clusterings = {}
+    x_train = []
+    y_train = []
+
+    # Generate silhouette feature vector and label vector
+    for target_word in train_word_to_paraphrases_dict.keys():
+        paraphrase_list = train_word_to_paraphrases_dict[target_word]
+
+        x = vectors.query(paraphrase_list)
+        range_n_clusters = [1, 2, 3, 4, 5, 6]
+
+        silhouette_avgs = []
+
+        for n_clusters in range_n_clusters:
+
+            clusterer = KMeans(n_clusters=n_clusters, random_state=10)
+            cluster_labels = clusterer.fit_predict(x)
+
+            silhouette_avg = silhouette_score(x, cluster_labels)
+            print("For n_clusters =", n_clusters,
+                  "The average silhouette_score is :", silhouette_avg)
+
+            silhouette_avgs.append(silhouette_avg)
+
+        x_train.append(silhouette_avgs)
+        y_train.append(train_word_to_k_dict[target_word])
+
+    x_train = np.array(x_train)
+    y_train = np.array(y_train)
+
+    # Generate label vector
+
+
+
+    # train model
+
+    model = XGBClassifier()
+    model.fit(x_train, y_train)
+
+    # Print model performance
+
+
+
+word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/dev_input.txt')
+gold_clusterings = load_output_file('data/dev_output.txt')
 # word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/dev_input.txt')
 # gold_clusterings = load_output_file('data/dev_output.txt')
 # predicted_clusterings = cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict)
