@@ -257,21 +257,41 @@ def cluster_with_no_k(word_to_paraphrases_dict):
       '''
 
         # Baseline Method (k=5)
-        # k = 7
-        # x = vectors.query(paraphrase_list)
-        # kmeans = KMeans(n_clusters=min(k, len(x))).fit(x)
-        #
+        k = 5
+        x = vectors.query(paraphrase_list)
+        kmeans = KMeans(n_clusters=min(k, len(x))).fit(x)
+
         # print("kmeans.labels_")
         # print(kmeans.labels_)
-        # words = [[], [], [], [], [], [], []]
-        # for i in range(len(paraphrase_list)):
-        #         words[kmeans.labels_[i]].append(paraphrase_list[i])
-        # clusterings[target_word] = words
+        words = [[], [], [], [], [], [], []]
+        for i in range(len(paraphrase_list)):
+                words[kmeans.labels_[i]].append(paraphrase_list[i])
+        clusterings[target_word] = words
 
-        # Using best clustering method
-        k = 1
-        word_to_k_dict = [k for _ in word_to_paraphrases_dict]
-        clusterings = cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict)
+        # K-means using silhouettes
+        # models = []
+        # silhouettes = []
+        # x = vectors.query(paraphrase_list)
+        # for k in range(20):
+        #     models.append(KMeans(n_clusters=max(min(k+2, len(x)-1), 2)).fit(x))
+        #     try:
+        #         silhouettes.append(silhouette_score(x, models[k].labels_))
+        #     except:
+        #         silhouettes.append(999)
+        #
+        # max_k = np.argmin(silhouettes)
+        # # print("max_k: " + str(max_k))
+        # # print("len(models): " + str(len(models)))
+        # # print("len(models[int(max_k)].labels_): " + str(len(models[int(max_k)].labels_)))
+        # # print("len(paraphrase_list):" + str(len(paraphrase_list)))
+        #
+        # words = []
+        # for k in range(max_k+2):
+        #     words.append([])
+        # for i in range(len(paraphrase_list)-1):
+        #     # print(i)
+        #     words[models[int(max_k)].labels_[i]].append(paraphrase_list[i])
+        # clusterings[target_word] = words
 
     return clusterings
 
