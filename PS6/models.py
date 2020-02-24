@@ -15,3 +15,8 @@ class CharRNNClassify(nn.Module):
 
     def init_hidden(self):
         pass
+
+dtype = torch.float
+# device = torch.device("cpu")
+device = torch.device("cuda:0")
+x = torch.randn(600, 50, device=device, dtype=dtype)
