@@ -284,7 +284,7 @@ def cluster_with_no_k(word_to_paraphrases_dict):
 
         # print("kmeans.labels_")
         # print(kmeans.labels_)
-        words = [[], [], [], [], [], [], []]
+        words = [[], [], [], [], []]
         for i in range(len(paraphrase_list)):
                 words[kmeans.labels_[i]].append(paraphrase_list[i])
         clusterings[target_word] = words
