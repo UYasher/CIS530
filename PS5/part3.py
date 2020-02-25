@@ -3,6 +3,7 @@ from itertools import combinations
 from prettytable import PrettyTable
 from sklearn.cluster import KMeans, SpectralClustering, DBSCAN, AgglomerativeClustering
 from sklearn.decomposition import PCA
+from PS4.main import create_PPMI_matrix
 import random
 from sklearn.metrics import silhouette_score
 from xgboost import XGBClassifier
@@ -114,31 +115,6 @@ def evaluate_clusterings(gold_clusterings, predicted_clusterings):
     print(f'=> Average Paired F-Score:  {average_f_score:.4f}')
 
 
-def create_PPMI_matrix(term_context_matrix):
-    '''Given a term context matrix, output a PPMI matrix.
-
-    See section 15.1 in the textbook.
-
-    Hint: Use numpy matrix and vector operations to speed up implementation.
-
-    Input:
-      term_context_matrix: A nxn numpy array, where n is
-          the numer of tokens in the vocab.
-
-    Returns: A nxn numpy matrix, where A_ij is equal to the
-       point-wise mutual information between the ith word
-       and the jth word in the term_context_matrix.
-    '''
-
-    f_sum = np.sum(term_context_matrix)
-    row_sum = np.sum(term_context_matrix, axis=1) # might need to flip row_sum and col_sum if not working
-    col_sum = np.sum(term_context_matrix, axis=0)
-    mult_sum = np.outer(row_sum, col_sum) / f_sum**2
-    ppmi_matrix = np.maximum(np.log2(np.multiply(term_context_matrix / (f_sum + 1e-6), 1 / (mult_sum + 1e-6)) + 1),
-                             np.zeros(np.shape(term_context_matrix)))
-    return ppmi_matrix
-
-
 # TASK 2.1
 def cluster_random(word_to_paraphrases_dict, word_to_k_dict):
     """
@@ -222,8 +198,11 @@ def cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict):
     where each list corresponds to a cluster
     """
     # Note: any vector representation should be in the same directory as this file
-    # vectors = Magnitude("vectors/GoogleNews-vectors-negative300.filter.magnitude")
-    vectors = Magnitude("vectors/crawl-300d-2M.magnitude")
+    vectors = Magnitude("vectors/GoogleNews-vectors-negative300.filter.magnitude")
+    # vectors = Magnitude("vectors/glove.840B.300d.magnitude")
+    # vectors = Magnitude("vectors/glove.6B.300d.magnitude")
+    # vectors = Magnitude("vectors/crawl-300d-2M.magnitude")
+    # vectors = Magnitude("vectors/GoogleNews-retrofit-wordnet.magnitude")
     dense_clusterings = {}
 
     for target_word in word_to_paraphrases_dict.keys():
@@ -257,7 +236,7 @@ def cluster_with_no_k(word_to_paraphrases_dict):
     where each list corresponds to a cluster
     """
     # Note: any vector representation should be in the same directory as this file
-    vectors = Magnitude("vectors/GoogleNews-vectors-negative300.filter.magnitude")
+    vectors = Magnitude("vectors/crawl-300d-2M.magnitude")
     clusterings = {}
 
     for target_word in word_to_paraphrases_dict.keys():
@@ -321,18 +300,13 @@ word_to_paraphrases_dict, _ = load_input_file('data/dev_input.txt')
 gold_clusterings = load_output_file('data/dev_output.txt')
 predicted_clusterings = cluster_with_no_k(word_to_paraphrases_dict)
 evaluate_clusterings(gold_clusterings, predicted_clusterings)
-write_to_output_file('dev_output_sparse.txt', predicted_clusterings)
+write_to_output_file('dev_output_nok.txt', predicted_clusterings)
 
 word_to_paraphrases_dict, _ = load_input_file('data/test_nok_input.txt')
 predicted_clusterings = cluster_with_no_k(word_to_paraphrases_dict)
-write_to_output_file('test_nok_output_leaderboard.txt', predicted_clusterings)
+write_to_output_file('test_nok_output.txt', predicted_clusterings)
 
-# word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/dev_input.txt')
-# gold_clusterings = load_output_file('data/dev_output.txt')
-# predicted_clusterings = cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict)
-# evaluate_clusterings(gold_clusterings, predicted_clusterings)
-# write_to_output_file('dev_output_sparse.txt', predicted_clusterings)
-#
+
 # word_to_paraphrases_dict, word_to_k_dict = load_input_file('data/test_input.txt')
 # predicted_clusterings = cluster_with_dense_representation(word_to_paraphrases_dict, word_to_k_dict)
 # write_to_output_file('test_output_leaderboard.txt', predicted_clusterings)
