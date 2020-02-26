@@ -6,7 +6,10 @@ import time
 import numpy as np
 import torch
 from sklearn.metrics import accuracy_score
-from PS6.models import CharRNNClassify
+from models import CharRNNClassify
+import torch.nn as nn
+import matplotlib.pyplot as plt
+
 
 '''
 Don't change these constants for the classification task.
@@ -85,10 +88,11 @@ def random_training_pair(X, y):
     def random_choice(ls):
         idx = random.randint(0, len(ls)-1)
         return ls[idx], idx
-    inputs, idx = random_choice(X)
-    inputs = line_to_tensor(inputs)
-    outputs = y[idx]
-    return inputs, outputs
+    line, idx = random_choice(X)
+    line_tensor = line_to_tensor(line)
+    category = y[idx]
+    category_tensor = torch.tensor([languages.index(category)], dtype=torch.long)
+    return category, line, category_tensor, line_tensor
 
 '''
 Input: trained model, a list of words, a list of class labels as integers
@@ -137,6 +141,8 @@ def trainOneEpoch(model, criterion, optimizer, X, y):
         loss = criterion(output, category_tensor)
         loss.backward()
 
+        # Should probably update with an optimizer instead of updating params manually
+
         # Add parameters' gradients to their values, multiplied by learning rate
         for p in model.parameters():
             p.data.add_(-learning_rate, p.grad.data)
@@ -149,12 +155,56 @@ Use this to train and save your classification model.
 Save your model with the filename "model_classify"
 '''
 def run():
+    # Init data
+    X, y = readData("./")
+
+    # Init Network
     n_letters = len(all_letters)
     n_hidden = 128
     n_categories = len(languages)
-    rnn = CharRNNClassify(n_letters)
+    rnn = CharRNNClassify(n_letters, n_hidden, n_categories)
 
+    # Init for training
+    criterion = nn.NLLLoss()
 
+    n_iters = 100000
+    print_every = 5000
+    plot_every = 1000
+
+    # Keep track of losses for plotting
+    current_loss = 0
+    all_losses = []
+
+    def timeSince(since):
+        now = time.time()
+        s = now - since
+        m = math.floor(s / 60)
+        s -= m * 60
+        return '%dm %ds' % (m, s)
+
+    start = time.time()
+
+    for iter in range(1, n_iters + 1):
+        category, line, category_tensor, line_tensor = random_training_pair(X, y)
+        output, loss = trainOneEpoch(rnn, criterion, None, category_tensor, line_tensor)
+        current_loss += loss
+
+        # Print iter number, loss, name and guess
+        if iter % print_every == 0:
+            guess, guess_i = category_from_output(output)
+            correct = '✓' if guess == category else '✗ (%s)' % category
+            print('%d %d%% (%s) %.4f %s / %s %s' % (
+            iter, iter / n_iters * 100, timeSince(start), loss, line, guess, correct))
+
+        # Add current loss avg to list of losses
+        if iter % plot_every == 0:
+            all_losses.append(current_loss / plot_every)
+            current_loss = 0
+
+    plt.figure()
+    plt.plot(all_losses)
+
+run()
 # getWords('', 'af')
 # x = getLabels('cn', 10)
 # print(x)
