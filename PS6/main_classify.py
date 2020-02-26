@@ -6,7 +6,6 @@ import time
 import numpy as np
 import torch
 from sklearn.metrics import accuracy_score
-from models import CharRNNClassify
 import torch.nn as nn
 import matplotlib.pyplot as plt
 
@@ -91,7 +90,7 @@ def random_training_pair(X, y):
     line, idx = random_choice(X)
     line_tensor = line_to_tensor(line)
     category = y[idx]
-    category_tensor = torch.tensor([languages.index(category)], dtype=torch.long)
+    category_tensor = torch.tensor([y[idx]], dtype=torch.long)
     return category, line, category_tensor, line_tensor
 
 '''
@@ -157,6 +156,11 @@ Save your model with the filename "model_classify"
 def run():
     # Init data
     X, y = readData("./")
+    print("X:")
+    print(X)
+    print()
+    print("y:")
+    print(y)
 
     # Init Network
     n_letters = len(all_letters)
@@ -185,7 +189,7 @@ def run():
     start = time.time()
 
     for iter in range(1, n_iters + 1):
-        category, line, category_tensor, line_tensor = random_training_pair(X, y)
+        category, line, category_tensor, line_tensor = random_training_pair([X], y)
         output, loss = trainOneEpoch(rnn, criterion, None, category_tensor, line_tensor)
         current_loss += loss
 
