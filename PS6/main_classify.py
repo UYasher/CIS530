@@ -6,6 +6,7 @@ import time
 import numpy as np
 import torch
 from sklearn.metrics import accuracy_score
+from PS6.models import CharRNNClassify
 
 '''
 Don't change these constants for the classification task.
@@ -94,15 +95,23 @@ Input: trained model, a list of words, a list of class labels as integers
 Output: a list of class labels as integers
 '''
 def predict(model, X, y):
+    predictions = []
+    for i in range(len(X)):
+        line_tensor = line_to_tensor(X[i])
+        hidden = model.initHidden()
+        for i in range(line_tensor.size()[0]):
+            output, hidden = model(line_tensor[i], hidden)
+        predictions.append(output)
+    return predictions
 
-    pass
 
 '''
 Input: trained model, a list of words, a list of class labels as integers
 Output: The accuracy of the given model on the given input X and target y
 '''
 def calculateAccuracy(model, X, y):
-    pass
+    y_pred = predict(model, X, y)
+    return accuracy_score(y, y_pred)
 
 '''
 Train the model for one epoch/one training word.
@@ -111,14 +120,39 @@ Input: X and y are lists of words as strings and classes as integers respectivel
 Returns: You may return anything
 '''
 def trainOneEpoch(model, criterion, optimizer, X, y):
-    pass
+    learning_rate = 0.002
+
+    for i in range(len(X)):
+
+        category_tensor = y[i]
+        line_tensor = line_to_tensor(X[i])
+
+        hidden = model.initHidden()
+
+        model.zero_grad()
+
+        for i in range(line_tensor.size()[0]):
+            output, hidden = model(line_tensor[i], hidden)
+
+        loss = criterion(output, category_tensor)
+        loss.backward()
+
+        # Add parameters' gradients to their values, multiplied by learning rate
+        for p in model.parameters():
+            p.data.add_(-learning_rate, p.grad.data)
+
+    return output, loss.item()
+
 
 '''
 Use this to train and save your classification model. 
 Save your model with the filename "model_classify"
 '''
 def run():
-    pass
+    n_letters = len(all_letters)
+    n_hidden = 128
+    n_categories = len(languages)
+    rnn = CharRNNClassify(n_letters)
 
 
 # getWords('', 'af')
