@@ -8,6 +8,7 @@ import torch
 from sklearn.metrics import accuracy_score
 import torch.nn as nn
 import matplotlib.pyplot as plt
+from PS6.models import CharRNNClassify
 
 
 '''
@@ -90,7 +91,9 @@ def random_training_pair(X, y):
     line, idx = random_choice(X)
     line_tensor = line_to_tensor(line)
     category = y[idx]
-    category_tensor = torch.tensor([y[idx]], dtype=torch.long)
+    one_hot = np.zeros(len(languages))
+    one_hot[category] = 1
+    category_tensor = torch.tensor(one_hot, dtype=torch.long)
     return category, line, category_tensor, line_tensor
 
 '''
@@ -99,11 +102,11 @@ Output: a list of class labels as integers
 '''
 def predict(model, X, y):
     predictions = []
-    for i in range(len(X)):
-        line_tensor = line_to_tensor(X[i])
-        hidden = model.initHidden()
-        for i in range(line_tensor.size()[0]):
-            output, hidden = model(line_tensor[i], hidden)
+    for ii in range(len(X)):
+        line_tensor = line_to_tensor(X[ii])
+        hidden = model.init_hidden()
+        for jj in range(line_tensor.size()[0]):
+            output, hidden = model(line_tensor[jj], hidden)
         predictions.append(output)
     return predictions
 
@@ -123,30 +126,29 @@ Input: X and y are lists of words as strings and classes as integers respectivel
 Returns: You may return anything
 '''
 def trainOneEpoch(model, criterion, optimizer, X, y):
-    learning_rate = 0.002
+    learning_rate = 1e-5
 
-    for i in range(len(X)):
+    category, line, category_tensor, line_tensor = random_training_pair(X, y)
 
-        category_tensor = y[i]
-        line_tensor = line_to_tensor(X[i])
+    hidden = model.init_hidden()
 
-        hidden = model.initHidden()
+    optimizer.zero_grad()
 
-        model.zero_grad()
+    for i in range(line_tensor.size()[0]):
+        output, hidden = model(line_tensor[i], hidden)
 
-        for i in range(line_tensor.size()[0]):
-            output, hidden = model(line_tensor[i], hidden)
+    category_tensor = category_tensor.view(1, len(languages))
+    loss = criterion(output, torch.max(category_tensor, 1)[1])
+    loss.backward()
 
-        loss = criterion(output, category_tensor)
-        loss.backward()
+    # Should probably update with an optimizer instead of updating params manually
 
-        # Should probably update with an optimizer instead of updating params manually
+    # Add parameters' gradients to their values, multiplied by learning rate
+    # for p in model.parameters():
+    #     p.data.add_(-learning_rate, p.grad.data)
+    optimizer.step()
 
-        # Add parameters' gradients to their values, multiplied by learning rate
-        for p in model.parameters():
-            p.data.add_(-learning_rate, p.grad.data)
-
-    return output, loss.item()
+    return output, loss.item(), category, line, model
 
 
 '''
@@ -156,17 +158,18 @@ Save your model with the filename "model_classify"
 def run():
     # Init data
     X, y = readData("./")
-    print("X:")
-    print(X)
-    print()
-    print("y:")
-    print(y)
+    # print("X:")
+    # print(X)
+    # print()
+    # print("y:")
+    # print(y)
 
     # Init Network
     n_letters = len(all_letters)
     n_hidden = 128
     n_categories = len(languages)
     rnn = CharRNNClassify(n_letters, n_hidden, n_categories)
+    lstm = nn.LSTM(n_letters, )
 
     # Init for training
     criterion = nn.NLLLoss()
@@ -187,10 +190,11 @@ def run():
         return '%dm %ds' % (m, s)
 
     start = time.time()
+    optimizer = torch.optim.Adam(rnn.parameters(), lr=1e-4)
 
     for iter in range(1, n_iters + 1):
-        category, line, category_tensor, line_tensor = random_training_pair([X], y)
-        output, loss = trainOneEpoch(rnn, criterion, None, category_tensor, line_tensor)
+
+        output, loss, category, line, rnn = trainOneEpoch(rnn, criterion, optimizer, X, y)
         current_loss += loss
 
         # Print iter number, loss, name and guess
@@ -205,8 +209,13 @@ def run():
             all_losses.append(current_loss / plot_every)
             current_loss = 0
 
+    val_x, val_y = readData('./', train=False)
+    acc = calculateAccuracy(rnn, val_x, val_y)
+    print('Validation Accuracy: ', acc)
+
     plt.figure()
     plt.plot(all_losses)
+    plt.show()
 
 run()
 # getWords('', 'af')
