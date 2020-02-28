@@ -179,7 +179,9 @@ def run():
 
     # Keep track of losses for plotting
     current_loss = 0
+    current_val_loss = 0
     all_losses = []
+    all_val_losses = []
 
     def timeSince(since):
         now = time.time()
@@ -190,6 +192,7 @@ def run():
 
     start = time.time()
     optimizer = torch.optim.Adam(rnn.parameters(), lr=1e-3)
+    val_x, val_y = readData('./', train=False)
 
     for iter in range(1, n_iters + 1):
 
@@ -203,21 +206,32 @@ def run():
             print('%d %d%% (%s) %.4f %s / %s %s' % (
             iter, iter / n_iters * 100, timeSince(start), loss, line, guess, correct))
 
+        # Compute loss for random validation pair
+        _, _, val_category_tensor, val_line_tensor = random_training_pair(val_x, val_y)
+        val_line_tensor = val_line_tensor.permute(1, 0, 2)
+        val_output, _ = rnn(val_line_tensor, hidden=rnn.init_hidden())
+        val_category_tensor = val_category_tensor.view(1, len(languages))
+        val_loss = criterion(val_output, torch.max(val_category_tensor, 1)[1])
+        current_val_loss += val_loss
+
         # Add current loss avg to list of losses
         if iter % plot_every == 0:
             all_losses.append(current_loss / plot_every)
+            all_val_losses.append(current_val_loss / plot_every)
             current_loss = 0
+            current_val_loss = 0
 
-    val_x, val_y = readData('./', train=False)
     acc = calculateAccuracy(rnn, val_x, val_y)
     print('Validation Accuracy: ', acc)
 
     torch.save(rnn.state_dict(), './model_classify.pth')
     plt.figure()
-    plt.plot(all_losses, 'r')
-    plt.title('Training loss')
+    plt.plot(all_losses, 'r', label='Train')
+    plt.plot(all_val_losses, 'b', label='Validate')
+    plt.title('Training/Validation loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
+    plt.legend(loc='upper right')
     num_points = int(n_iters / plot_every)
     num_ticks = 5
     spacing = int(num_points / num_ticks)
