@@ -61,7 +61,7 @@ Refer the tutorial in the spec
 Return: A tensor corresponding to the given line
 '''
 def line_to_tensor(line):
-    tensor = torch.zeros(len(line), 1, len(all_letters))
+    tensor = torch.zeros(len(line), 1, len(all_letters), dtype=torch.float)
     for li, letter in enumerate(line):
         tensor[li][0][all_letters.find(letter)] = 1
     return tensor
@@ -93,7 +93,7 @@ def random_training_pair(X, y):
     category = y[idx]
     one_hot = np.zeros(len(languages))
     one_hot[category] = 1
-    category_tensor = torch.tensor(one_hot, dtype=torch.long)
+    category_tensor = torch.tensor(one_hot, dtype=torch.float)
     return category, line, category_tensor, line_tensor
 
 '''
@@ -102,12 +102,13 @@ Output: a list of class labels as integers
 '''
 def predict(model, X, y):
     predictions = []
+    hidden = model.init_hidden()
     for ii in range(len(X)):
         line_tensor = line_to_tensor(X[ii])
-        hidden = model.init_hidden()
-        for jj in range(line_tensor.size()[0]):
-            output, hidden = model(line_tensor[jj], hidden)
-        predictions.append(output)
+        line_tensor = line_tensor.permute(1, 0, 2)
+        output, _ = model(line_tensor, hidden=hidden)
+        output = torch.max(output, 1)[1]
+        predictions.append(output[0])
     return predictions
 
 
@@ -126,7 +127,6 @@ Input: X and y are lists of words as strings and classes as integers respectivel
 Returns: You may return anything
 '''
 def trainOneEpoch(model, criterion, optimizer, X, y):
-    learning_rate = 1e-5
 
     category, line, category_tensor, line_tensor = random_training_pair(X, y)
 
@@ -134,10 +134,13 @@ def trainOneEpoch(model, criterion, optimizer, X, y):
 
     optimizer.zero_grad()
 
-    for i in range(line_tensor.size()[0]):
-        output, hidden = model(line_tensor[i], hidden)
-
+    # for i in range(line_tensor.size()[0]):
+    #     output, hidden = model(line_tensor[i], hidden)
+    line_tensor = line_tensor.permute(1, 0, 2)
+    output, _ = model(line_tensor, hidden=hidden)
+    # print(output.size())
     category_tensor = category_tensor.view(1, len(languages))
+    # loss = criterion(output, torch.max(category_tensor, 1)[1])
     loss = criterion(output, torch.max(category_tensor, 1)[1])
     loss.backward()
 
@@ -165,16 +168,12 @@ def run():
     # print(y)
 
     # Init Network
-    n_letters = len(all_letters)
-    n_hidden = 128
-    n_categories = len(languages)
-    rnn = CharRNNClassify(n_letters, n_hidden, n_categories)
-    lstm = nn.LSTM(n_letters, )
+    rnn = CharRNNClassify()
 
     # Init for training
     criterion = nn.NLLLoss()
 
-    n_iters = 100000
+    n_iters = 300000
     print_every = 5000
     plot_every = 1000
 
@@ -190,7 +189,7 @@ def run():
         return '%dm %ds' % (m, s)
 
     start = time.time()
-    optimizer = torch.optim.Adam(rnn.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(rnn.parameters(), lr=1e-3)
 
     for iter in range(1, n_iters + 1):
 
@@ -213,12 +212,18 @@ def run():
     acc = calculateAccuracy(rnn, val_x, val_y)
     print('Validation Accuracy: ', acc)
 
+    torch.save(rnn.state_dict(), './model_classify.pth')
     plt.figure()
-    plt.plot(all_losses)
+    plt.plot(all_losses, 'r')
+    plt.title('Training loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    num_points = int(n_iters / plot_every)
+    num_ticks = 5
+    spacing = int(num_points / num_ticks)
+    plt.xticks(np.arange(0, num_points + 1, spacing), [x * plot_every for x in range(0, num_points + 1, spacing)])
     plt.show()
 
-run()
-# getWords('', 'af')
-# x = getLabels('cn', 10)
-# print(x)
 
+if __name__ == '__main__':
+    run()
