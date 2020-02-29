@@ -173,7 +173,7 @@ def run():
     # Init for training
     criterion = nn.NLLLoss()
 
-    n_iters = 300000
+    n_iters = 200000
     print_every = 5000
     plot_every = 1000
 
@@ -207,12 +207,12 @@ def run():
             iter, iter / n_iters * 100, timeSince(start), loss, line, guess, correct))
 
         # Compute loss for random validation pair
-        _, _, val_category_tensor, val_line_tensor = random_training_pair(val_x, val_y)
-        val_line_tensor = val_line_tensor.permute(1, 0, 2)
-        val_output, _ = rnn(val_line_tensor, hidden=rnn.init_hidden())
-        val_category_tensor = val_category_tensor.view(1, len(languages))
-        val_loss = criterion(val_output, torch.max(val_category_tensor, 1)[1])
-        current_val_loss += val_loss
+        # _, _, val_category_tensor, val_line_tensor = random_training_pair(val_x, val_y)
+        # val_line_tensor = val_line_tensor.permute(1, 0, 2)
+        # val_output, _ = rnn(val_line_tensor, hidden=rnn.init_hidden())
+        # val_category_tensor = val_category_tensor.view(1, len(languages))
+        # val_loss = criterion(val_output, torch.max(val_category_tensor, 1)[1])
+        # current_val_loss += val_loss
 
         # Add current loss avg to list of losses
         if iter % plot_every == 0:
@@ -225,18 +225,18 @@ def run():
     print('Validation Accuracy: ', acc)
 
     torch.save(rnn.state_dict(), './model_classify.pth')
-    plt.figure()
-    plt.plot(all_losses, 'r', label='Train')
-    plt.plot(all_val_losses, 'b', label='Validate')
-    plt.title('Training/Validation loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend(loc='upper right')
-    num_points = int(n_iters / plot_every)
-    num_ticks = 5
-    spacing = int(num_points / num_ticks)
-    plt.xticks(np.arange(0, num_points + 1, spacing), [x * plot_every for x in range(0, num_points + 1, spacing)])
-    plt.show()
+    # plt.figure()
+    # plt.plot(all_losses, 'r', label='Train')
+    # plt.plot(all_val_losses, 'b', label='Validate')
+    # plt.title('Training/Validation loss')
+    # plt.xlabel('Epochs')
+    # plt.ylabel('Loss')
+    # plt.legend(loc='upper right')
+    # num_points = int(n_iters / plot_every)
+    # num_ticks = 5
+    # spacing = int(num_points / num_ticks)
+    # plt.xticks(np.arange(0, num_points + 1, spacing), [x * plot_every for x in range(0, num_points + 1, spacing)])
+    # plt.show()
 
 
 if __name__ == '__main__':
