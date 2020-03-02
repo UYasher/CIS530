@@ -2,6 +2,7 @@ from nltk.corpus import conll2002
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.linear_model import Perceptron
 from sklearn.metrics import precision_recall_fscore_support
+from xgboost import XGBClassifier
 
 # Assignment 7: NER
 # This is just to help you get going. Feel free to
@@ -26,7 +27,7 @@ def word2features(sent, i):
     sentence."""
     features = []
     # the window around the token
-    for o in [-1,0,1]:
+    for o in [-4,-3,-2,-1,0,1,2,3,4]:
         if i+o >= 0 and i+o < len(sent):
             word = sent[i+o][0]
             featlist = getfeats(word, o)
@@ -53,7 +54,8 @@ if __name__ == "__main__":
     X_train = vectorizer.fit_transform(train_feats)
 
     # TODO: play with other models
-    model = Perceptron(verbose=1)
+    #model = Perceptron(verbose=1)
+    model = XGBClassifier()
     model.fit(X_train, train_labels)
 
     test_feats = []
@@ -68,6 +70,7 @@ if __name__ == "__main__":
 
     X_test = vectorizer.transform(test_feats)
     y_pred = model.predict(X_test)
+
 
     j = 0
     print("Writing to results.txt")
