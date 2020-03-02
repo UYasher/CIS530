@@ -1,0 +1,52 @@
+important.a :: 1 :: crucial
+important.a :: 2 :: significant
+important.a :: 3 :: authoritative
+argument.n :: 1 :: pro
+argument.n :: 2 :: give-and-take
+argument.n :: 3 :: tilt
+argument.n :: 4 :: variable casuistry logomachy conflict word clincher summary disceptation arguing argy-bargy statement contestation polemic fight contention adducing line address proof argle-bargle policy argumentation sum-up sparring disputation value difference determiner dispute case firestorm parameter reasoning discussion reference con evidence controversy counterargument debate
+encounter.v :: 1 :: confront
+encounter.v :: 2 :: find experience see intersect chance be play happen cross meet bump replay face receive have
+activate.v :: 1 :: initiate
+activate.v :: 2 :: modify
+activate.v :: 3 :: change
+activate.v :: 4 :: actuate trip aerate pioneer spark trigger reactivate alter
+decide.v :: 1 :: adjudicate end cause settle have get regularise make will govern seal stimulate adjust determine order orient try resolve influence regularize orientate take regulate mensurate purpose rule select choose shape measure decree judge
+decide.v :: 2 :: terminate
+decide.v :: 3 :: mold
+decide.v :: 4 :: induce
+solid.a :: 1 :: hearty strong whole substantial satisfying self-colored upstanding unanimous square firm self-coloured
+difficulty.n :: 1 :: pinch job formidability wrinkle grimness effortfulness condition tsuris hardness facer rigorousness strain effort hinderance hardship pisser situation toughness troublesomeness difficultness snorter bitch status hindrance ruggedness burdensomeness muddle mess subtlety rigour severeness wall sweat severity asperity killer impediment kink worriment deterrent travail pickle quality plight check rigor fix baulk heaviness oppressiveness inconvenience trouble stress problem rattrap pitfall balk jam exertion handicap niceness hole onerousness rigourousness
+difficulty.n :: 2 :: quandary
+difficulty.n :: 3 :: mire
+difficulty.n :: 4 :: predicament
+audience.n :: 1 :: interview gallery conference grandstand multitude gathering hearing masses people consultation viewers readership chance mass house assemblage opportunity
+remain.v :: 1 :: abide
+remain.v :: 2 :: persist stand stick linger continue be bide keep stay rest
+disc.n :: 1 :: audio deadeye round platter floppy dot diskette planchet 78 seventy-eight circle point plate puck disk L-P discus diaphragm saucer LP record Frisbee token
+lose.v :: 1 :: regress
+lose.v :: 2 :: decline mislay position drop put whiteout forget misplace pose overlook lay leave worsen white-out retrograde recede set place retrogress miss suffer
+add.v :: 1 :: impart
+add.v :: 2 :: compute
+add.v :: 3 :: tot
+add.v :: 4 :: numerate enumerate milk transfuse concatenate intercalate calculate increase adjoin foot button compound inject qualify alter instill summate append supply tinsel modify tally butylate form constitute stud cipher count enrich sum insert tell number change supplement factor make figure mix reckon cypher bring bestow string say contribute combine punctuate include state lend welt total fortify mark
+sort.n :: 1 :: make genus genre individual colour similarity stripe person flavor style operation antitype kind category like manner brand somebody someone model form soul species flavour ilk color mortal sorting type variety
+sort.n :: 2 :: description
+ask.v :: 1 :: query
+ask.v :: 2 :: solicit
+ask.v :: 3 :: formulate
+ask.v :: 4 :: articulate interrogate require involve demand postulate inquire request quest address expect draw phrase question need intercommunicate claim govern exact word cost consult enquire necessitate call take compel pry bespeak communicate
+hot.a :: 1 :: raging
+hot.a :: 2 :: spicy
+hot.a :: 3 :: red-hot
+hot.a :: 4 :: live
+hot.a :: 5 :: blistering
+arm.n :: 1 :: W.M.D. weapon shirtsleeve flamethrower hatchet blade lance knuckles instrument tomahawk knucks projection sleeve bow gun missile slasher branch steel shaft spear limb armrest projectile WMD brand subdivision knife pike division
+arm.n :: 2 :: sword
+arm.n :: 3 :: sling
+appear.v :: 1 :: pop materialise glow glint re-emerge show cut be materialize glisten loom reappear peep fulminate rise happen gleam make manifest occur glitter lift jump feel erupt beam seem surface basset break outcrop perform sound emerge do look
+appear.v :: 2 :: shine
+appear.v :: 3 :: rear
+appear.v :: 4 :: execute
+appear.v :: 5 :: flash
+appear.v :: 6 :: radiate

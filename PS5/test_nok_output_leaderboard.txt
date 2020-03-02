@@ -1,0 +1,96 @@
+terrible.a :: 1 :: fearful fearsome frightful frightening
+terrible.a :: 2 :: horrendous painful awful atrocious abominable unspeakable wicked dreadful horrific
+terrible.a :: 3 :: dire severe direful
+terrible.a :: 4 :: dreaded dread
+terrible.a :: 5 :: tremendous
+closely.r :: 1 :: tight
+closely.r :: 2 :: nearly
+closely.r :: 3 :: intimately
+closely.r :: 4 :: close
+around.r :: 1 :: roughly
+around.r :: 2 :: some
+around.r :: 3 :: about
+around.r :: 4 :: round
+around.r :: 5 :: approximately
+range.n :: 1 :: Primus eyeshot potbelly capableness stove cookstove
+range.n :: 2 :: hearing compass earshot reach ambit grasp view chain installation horizon ken facility ballpark capability latitude purview extent confines expanse sweep limit scope sight orbit earreach
+range.n :: 3 :: formation band internationalism internationality potentiality
+range.n :: 4 :: spectrum image palette contrast set pallet
+range.n :: 5 :: motley assortment smorgasbord potpourri tract miscellanea salmagundi parcel gamut mixture miscellany variety
+stand.v :: 1 :: countenance brook bear endure pose suffer abide
+stand.v :: 2 :: remain support evaluate continue judge let set accept permit allow serve pay tolerate align measure be oppose
+stand.v :: 3 :: queue place array position put stay rest service
+stand.v :: 4 :: ramp lay withstand resist fend fight defend
+stand.v :: 5 :: digest swallow wash stomach
+strain.n :: 1 :: nisus jehad jihad
+strain.n :: 2 :: substance fanfare cradlesong meaning drift signature theme voice roulade carol music tune tucket part leitmotiv idea leitmotif tenor glissando air line song form lullaby melody
+strain.n :: 3 :: nervousness stress sweat tenseness injury harm overstrain nerves travail tension exertion difficulty straining pains deformation hurt trauma
+strain.n :: 4 :: variety pedigree var. variant breed flourish stock taxon bloodstock
+strain.n :: 5 :: effort striving purport attempt try endeavor endeavour
+worthy.a :: 1 :: suitable
+worthy.a :: 2 :: desirable
+full.a :: 1 :: replete
+full.a :: 2 :: broad wide
+full.a :: 3 :: entire total
+full.a :: 4 :: wide-cut
+full.a :: 5 :: good
+heavy.a :: 1 :: sonorous overweight clayey ponderous impenetrable leaden lumbering lowering sullen fleshy dense weighty cloggy
+heavy.a :: 2 :: intemperate punishing grievous grave threatening profound
+heavy.a :: 3 :: backbreaking gruelling hard toilsome arduous labored laboured grueling laborious
+heavy.a :: 4 :: large sound great big
+heavy.a :: 5 :: wakeless enceinte operose expectant gravid
+soil.n :: 1 :: mud filth uncleanness grime dirtiness dirt grunge grease stain
+soil.n :: 2 :: tillage ploughland sward farmland bole tilth badlands wetland polder territory plowland bottomland greensward scablands regosol turf clunch wiesenboden coastland rangeland land
+soil.n :: 3 :: mould mold
+soil.n :: 4 :: earth podsol object till ground
+soil.n :: 5 :: gumbo topsoil undersoil subsoil sand permafrost podzol bottom silt overburden loess caliche humus laterite marl loam clay hardpan sod
+blow.n :: 1 :: whiplash whiff reversal reverse jolt happening blip wind thrust jounce shock setback clout occurrence bump sideswipe impact stinger lash wallop surprise stroke gust concussion buffeting whammy
+blow.n :: 2 :: pound whip hammering hammer smacking bang boot whang kick smash bash thwack whack poke swat kicking bluster slug smack swing box biff slap blast strike pounding counterblow lick tap shot punch knock stab thump
+blow.n :: 3 :: insufflation belt exhalation puff expiration
+blow.n :: 4 :: knockdown KO C kayo uppercut knockout
+blow.n :: 5 :: occurrent sandblast cocaine backhander snow coke cocain rap smacker clip jar
+well.r :: 1 :: considerably substantially
+well.r :: 2 :: easily comfortably
+well.r :: 3 :: intimately
+well.r :: 4 :: good
+well.r :: 5 :: advantageously
+way.n :: 1 :: category selection idiom mode lifestyle signature touch life-style voice means fashion ambages style tendency wise trend setup approach share response form manner fit
+way.n :: 2 :: stairway escape clearance headroom salvation seats seating room drape staircase parking access tooth wings passage lebensraum
+way.n :: 3 :: artefact property tool condition houseroom status effectuation aim watercourse dint percentage artifact instrument bearing agency
+way.n :: 4 :: hadith qibla Sunnah Sunna
+way.n :: 5 :: pick course journey position lane heading distance journeying expedient road direction part waterway choice path route itinerary portion headway warpath implementation
+true.a :: 1 :: on-key unfeigned
+true.a :: 2 :: dependable reliable
+true.a :: 3 :: truthful honest genuine
+true.a :: 4 :: rightful lawful
+true.a :: 5 :: straight
+acute.a :: 1 :: needlelike knifelike
+acute.a :: 2 :: sharp keen incisive
+acute.a :: 3 :: piercing penetrating penetrative intense
+acute.a :: 4 :: acuate
+acute.a :: 5 :: discriminating
+right.r :: 1 :: mighty mightily powerful
+right.r :: 2 :: aright justly
+right.r :: 3 :: decent decently
+right.r :: 4 :: correctly properly
+right.r :: 5 :: flop
+cross.a :: 1 :: transverse transversal
+cross.a :: 2 :: ill-tempered bad-tempered grumpy grouchy crabby
+cross.a :: 3 :: thwartwise
+cross.a :: 4 :: fussy
+cross.a :: 5 :: crabbed
+clear.a :: 1 :: open clean
+clear.a :: 2 :: exonerated exculpated vindicated cleared absolved
+clear.a :: 3 :: clean-cut well-defined clear-cut
+clear.a :: 4 :: light unclouded percipient unmortgaged
+clear.a :: 5 :: decipherable readable
+new.a :: 1 :: fresh raw
+new.a :: 2 :: newfangled unexampled
+new.a :: 3 :: young
+new.a :: 4 :: novel
+new.a :: 5 :: New Modern
+saint.n :: 1 :: deity god Buddha immortal divinity
+saint.n :: 2 :: nonsuch jimdandy jimhickey
+saint.n :: 3 :: fakeer fakir faquir faqir
+saint.n :: 4 :: nonpareil humdinger ideal nonesuch paragon crackerjack apotheosis
+saint.n :: 5 :: angel model
