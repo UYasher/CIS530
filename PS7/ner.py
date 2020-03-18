@@ -4,6 +4,7 @@ from nltk import pos_tag
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.linear_model import Perceptron
 from sklearn.metrics import precision_recall_fscore_support
+from xgboost import XGBClassifier
 
 # Assignment 7: NER
 # This is just to help you get going. Feel free to
@@ -69,10 +70,7 @@ if __name__ == "__main__":
             train_labels.append(sent[i][-1])
 
     vectorizer = DictVectorizer()
-    print(len(train_feats))
-    print(train_feats[:4])
     X_train = vectorizer.fit_transform(train_feats)
-    print(X_train.shape)
 
     # TODO: play with other models
     model = Perceptron(verbose=1)
