@@ -5,7 +5,7 @@
       <paths name="danieljkim0118@158.130.14.13:22">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/danieljkim0118/anaconda3/CIS530" local="$PROJECT_DIR$" />
+            <mapping deploy="/home/danieljkim0118/anaconda3/CIS530/PS7" local="$PROJECT_DIR$" />
           </mappings>
         </serverdata>
       </paths>
