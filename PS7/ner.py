@@ -1,4 +1,6 @@
 import nltk
+import pickle
+import re
 from nltk.corpus import conll2002
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.linear_model import Perceptron
@@ -31,30 +33,28 @@ def getfeats(word, pos, o):
         (o + 'lower', word.lower()),
         (o + 'upper', word.isupper()),
         # (o + 'name', spanish_names(word)),
-        # (o + 'place', spanish_loc(word))
+        # (o + 'place', spanish_loc(word)),
         (o + 'digit', contains_digits(word)),
         (o + '2prefix', word[:2]),
         (o + '3prefix', word[:3]),
         (o + '4prefix', word[:4]),
         (o + '2suffix', word[-2:]),
         (o + '3suffix', word[-3:]),
-        (o + '4suffix', word[-4:])
+        (o + '4suffix', word[-4:]),
+        # (o + 'word_shape', word_shape(word)),
+        # (o + 'hyphen', contains_hyphen(word)),
     ]
     return features
 
 
 # Determines whether the given word is a Spanish name
 def spanish_names(word):
-    if word in names:
-        return 1
-    return 0
+    return word in names
 
 
 # Determines whether the given word is a Spanish location
 def spanish_loc(word):
-    if word in places:
-        return 1
-    return 0
+    return word in places
 
 
 # Retrieves features for the ith word (starting at 0) in the sentence 'sent'
@@ -74,8 +74,19 @@ def word2features(sent, i):
     return dict(features)
 
 
-def contains_digits(inputs):
-    return any(char.isdigit for char in inputs)
+def contains_digits(word):
+    return any(char.isdigit for char in word)
+
+
+def contains_hyphen(word):
+    return '-' in word
+
+
+def word_shape(word):
+    word = re.sub('[A-Z]', 'X', word)
+    word = re.sub('[a-z]', 'x', word)
+    word = re.sub('[0-9]', 'd', word)
+    return word
 
 
 if __name__ == "__main__":
@@ -111,15 +122,18 @@ if __name__ == "__main__":
 
     vectorizer = DictVectorizer()
     X_train = vectorizer.fit_transform(train_feats)
-    num_comp = 150
+    # num_comp = 150
 
     # TODO: play with other models
-    model = Perceptron(verbose=1)
+    # model = Perceptron(verbose=1)
+    model = LogisticRegression(verbose=1)
+    # model = SVC(verbose=2)
     # model = GradientBoostingClassifier(verbose=1)
     # model = sklearn_crfsuite.CRF(algorithm='lbfgs', c1=0.1, c2=0.1, all_possible_transitions=True, verbose=1)
     # X_train = TruncatedSVD(n_components=num_comp).fit_transform(X_train)
     # model = MLPClassifier(hidden_layer_sizes=50, verbose=1, max_iter=150)
     model.fit(X_train, train_labels)
+    pickle.dump(model, open('model', 'wb'))
     # model.fit(crf_train_feats, crf_train_labels)
 
     test_feats = []
@@ -128,7 +142,7 @@ if __name__ == "__main__":
     crf_test_feats = []
     crf_test_labels = []
     # switch to test_sents for your final results
-    for sent in dev_sents:
+    for sent in test_sents:
         for i in range(len(sent)):
             feats = word2features(sent, i)
             test_feats.append(feats)
