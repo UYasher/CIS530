@@ -143,11 +143,11 @@ if __name__ == "__main__":
 
     print("Training model...")
     # TODO: play with other models
-    model = Perceptron(verbose=1)
+    # model = Perceptron(verbose=1)
     # model = LogisticRegression(verbose=1)
     # model = SVC(verbose=2)
     # model = GradientBoostingClassifier(verbose=1, max_depth=1)
-    # model = AdaBoostClassifier()
+    model = AdaBoostClassifier()
     # model = sklearn_crfsuite.CRF(algorithm='lbfgs', c1=0.1, c2=0.1, all_possible_transitions=True, verbose=1)
     # X_train = TruncatedSVD(n_components=num_comp).fit_transform(X_train)
     # model = MLPClassifier(hidden_layer_sizes=50, verbose=1, max_iter=150)
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     crf_test_labels = []
     # switch to test_sents for your final results
     # for sent in test_sents:
-    for sent in test_sents:
+    for sent in train_sents:
         for i in range(len(sent)):
             feats = word2features(sent, i)
             test_feats.append(feats)
@@ -176,10 +176,10 @@ if __name__ == "__main__":
     # y_pred = model.predict(crf_test_feats)
 
     j = 0
-    print("Writing to results.txt")
+    print("Writing results...")
     # format is: word gold pred
-    with open("results.txt", "w") as out:
-        for sent in test_sents:
+    with open("ada_train_results.txt", "w") as out:
+        for sent in train_sents:
             for i in range(len(sent)):
                 word = sent[i][0]
                 gold = sent[i][-1]
