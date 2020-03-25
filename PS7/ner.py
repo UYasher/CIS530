@@ -4,7 +4,7 @@ import re
 from nltk.corpus import conll2002
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.linear_model import Perceptron
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.decomposition import TruncatedSVD
 import sklearn_crfsuite
@@ -14,6 +14,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
+from sklearn import preprocessing
 
 # Assignment 7: NER
 # This is just to help you get going. Feel free to
@@ -43,6 +44,7 @@ def getfeats(word, pos, o):
         (o + '4suffix', word[-4:]),
         # (o + 'word_shape', word_shape(word)),
         # (o + 'hyphen', contains_hyphen(word)),
+        # ((o + 'chunk'), syntactic_chunk(word)),
     ]
     return features
 
@@ -58,6 +60,7 @@ def spanish_loc(word):
 
 
 # Retrieves features for the ith word (starting at 0) in the sentence 'sent'
+# TODO: Might also pass in sent to getfeats so we can chunk
 def word2features(sent, i):
     """ The function generates all features
     for the word at position i in the
@@ -89,24 +92,31 @@ def word_shape(word):
     return word
 
 
+def syntactic_chunk(sent):
+    return nltk.ne_chunk(sent)
+
 if __name__ == "__main__":
     # Load a list of Spanish names
-    name_file = 'esp_names.txt'
-    names = list()
-    with open(name_file, 'r') as file:
-        for line in file:
-            names.extend(line.split())
+    # name_file = 'esp_names.txt'
+    # names = list()
+    # with open(name_file, 'r') as file:
+    #     for line in file:
+    #         names.extend(line.split())
+
     # Load a list of Spanish places
-    loc_file = 'esp_places.txt'
-    places = list()
-    with open(loc_file, 'r') as file:
-        for line in file:
-            places.extend(line.split())
+    # loc_file = 'esp_places.txt'
+    # places = list()
+    # with open(loc_file, 'r') as file:
+    #     for line in file:
+    #         places.extend(line.split())
+
     # Load the training data
+    print("Loading training data...")
     train_sents = list(conll2002.iob_sents('esp.train'))
     dev_sents = list(conll2002.iob_sents('esp.testa'))
     test_sents = list(conll2002.iob_sents('esp.testb'))
 
+    print("Processing training data...")
     train_feats = []
     train_labels = []
 
@@ -120,15 +130,24 @@ if __name__ == "__main__":
         crf_train_feats.append(train_feats)
         crf_train_labels.append(train_labels)
 
+    print("Vectorizing data...")
     vectorizer = DictVectorizer()
     X_train = vectorizer.fit_transform(train_feats)
+
+    # print("Scaling data...")
+    # max_abs_scaler = preprocessing.MaxAbsScaler()
+    # X_train = max_abs_scaler.fit_transform(X_train)
+    # print(X_train)
+
     # num_comp = 150
 
+    print("Training model...")
     # TODO: play with other models
-    # model = Perceptron(verbose=1)
-    model = LogisticRegression(verbose=1)
+    model = Perceptron(verbose=1)
+    # model = LogisticRegression(verbose=1)
     # model = SVC(verbose=2)
-    # model = GradientBoostingClassifier(verbose=1)
+    # model = GradientBoostingClassifier(verbose=1, max_depth=1)
+    # model = AdaBoostClassifier()
     # model = sklearn_crfsuite.CRF(algorithm='lbfgs', c1=0.1, c2=0.1, all_possible_transitions=True, verbose=1)
     # X_train = TruncatedSVD(n_components=num_comp).fit_transform(X_train)
     # model = MLPClassifier(hidden_layer_sizes=50, verbose=1, max_iter=150)
@@ -142,6 +161,7 @@ if __name__ == "__main__":
     crf_test_feats = []
     crf_test_labels = []
     # switch to test_sents for your final results
+    # for sent in test_sents:
     for sent in test_sents:
         for i in range(len(sent)):
             feats = word2features(sent, i)
@@ -159,7 +179,7 @@ if __name__ == "__main__":
     print("Writing to results.txt")
     # format is: word gold pred
     with open("results.txt", "w") as out:
-        for sent in dev_sents:
+        for sent in test_sents:
             for i in range(len(sent)):
                 word = sent[i][0]
                 gold = sent[i][-1]
